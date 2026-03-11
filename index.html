@@ -23,7 +23,7 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            pointer-events: none;
+            pointer-events: auto; /* Diubah agar tombol bisa diklik */
             background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 12px;
@@ -32,25 +32,61 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
         h1 { margin: 0 0 10px 0; font-size: 20px; color: #00ffcc; text-transform: uppercase; letter-spacing: 1px;}
-        p { margin: 5px 0; font-size: 14px; color: #ccc; line-height: 1.5; }
+        p { margin: 5px 0; font-size: 14px; color: #ccc; line-height: 1.5; pointer-events: none;}
         .highlight { color: #ffeb3b; font-weight: bold; }
         
+        /* Tambahan UI untuk Gear Selector */
+        .gear-panel {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #555;
+        }
+        .gear-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .gear-btn {
+            background: #222;
+            color: #fff;
+            border: 2px solid #555;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .gear-btn:hover { background: #444; }
+        .gear-btn.active {
+            background: #00ffcc;
+            color: #000;
+            border-color: #00ffcc;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
         #pressure-info {
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 900;
             color: #fff;
             background: rgba(10,10,10,0.9);
             padding: 15px 40px;
-            border-radius: 50px;
+            border-radius: 20px; /* Disesuaikan untuk 2 baris teks */
             border: 3px solid #555;
             pointer-events: none;
             transition: all 0.1s;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .output-text {
+            font-size: 32px;
+            color: #00ffcc;
+            margin-top: 5px;
         }
     </style>
     <!-- Import Three.js dan OrbitControls -->
@@ -64,144 +100,39 @@
         <p>Inovasi Konversi Tekanan Statis ke Frekuensi Dinamis.</p>
         <br>
         <p>🕹️ <span class="highlight">Instruksi Interaktif:</span></p>
-        <p>1. <b>Klik Kiri dan Geser</b> untuk memutar sudut pandang.</p>
-        <p>2. <b>KLIK DAN TAHAN (Hold)</b> bantalan karet (pad) di tengah.</p>
-        <p>3. Perhatikan <b>Panel LED Dashboard</b> menyala sesuai kekuatan tekanan Anda.</p>
+        <p>1. <b>Klik & Tahan</b> bantalan karet di tengah.</p>
+        <p>2. Perhatikan <b>Panel LED</b> menyala sesuai tekanan.</p>
+        
+        <div class="gear-panel">
+            <p style="color: #fff; font-weight: bold; pointer-events: none;">⚙️ OUTPUT MULTIPLIER (Untuk PvE/Lego):</p>
+            <div class="gear-buttons">
+                <button class="gear-btn active" onclick="setGear(1, 15)" id="btn-gear1">Gear 1<br><small>15 Clicks/s</small></button>
+                <button class="gear-btn" onclick="setGear(2, 30)" id="btn-gear2">Gear 2<br><small>30 Clicks/s</small></button>
+                <button class="gear-btn" onclick="setGear(3, 60)" id="btn-gear3">Gear 3<br><small>60 Clicks/s</small></button>
+            </div>
+        </div>
     </div>
 
-    <div id="pressure-info">FORCE: 0%</div>
+    <div id="pressure-info">
+        <div id="text-force">FORCE: 0%</div>
+        <div id="text-output" class="output-text">OUTPUT: 0 Clicks/sec</div>
+    </div>
 
     <div id="canvas-container"></div>
 
     <script>
-        // Setup Dasar Scene Three.js
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111111);
-        scene.fog = new THREE.FogExp2(0x111111, 0.015);
+        // Logika Gear / Output Multiplier
+        let maxClicksPerSecond = 15; // Default Gear 1
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 35, 50); // Kamera sedikit lebih tinggi
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        const canvasContainer = document.getElementById('canvas-container');
-        canvasContainer.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 - 0.05; 
-        controls.minDistance = 20;
-        controls.maxDistance = 80;
-
-        // Pencahayaan
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(10, 40, 20);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
-        scene.add(dirLight);
-
-        const spotLight = new THREE.SpotLight(0x00ffcc, 0.4);
-        spotLight.position.set(-20, 30, 10);
-        spotLight.angle = Math.PI/4;
-        scene.add(spotLight);
-
-        // Lantai Meja
-        const floorGeo = new THREE.PlaneGeometry(200, 200);
-        const floorMat = new THREE.MeshStandardMaterial({ 
-            color: 0x0a0a0a, 
-            roughness: 0.2, 
-            metalness: 0.8 
-        });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -5;
-        floor.receiveShadow = true;
-        scene.add(floor);
-
-        // ==========================================
-        // PEMBUATAN BODI ALAT (WEDGE / LANDAI)
-        // ==========================================
-        const deviceGroup = new THREE.Group();
-        scene.add(deviceGroup);
-
-        // Bodi Utama
-        const baseGeo = new THREE.BoxGeometry(34, 4, 24);
-        const baseMat = new THREE.MeshStandardMaterial({ 
-            color: 0x222222, 
-            roughness: 0.8,
-            metalness: 0.3
-        });
-        const base = new THREE.Mesh(baseGeo, baseMat);
-        base.position.y = 2;
-        base.rotation.x = Math.PI / 14; 
-        base.castShadow = true;
-        base.receiveShadow = true;
-        deviceGroup.add(base);
-
-        // Kaki penyangga bawah 
-        const supportGeo = new THREE.BoxGeometry(32, 6, 12);
-        const support = new THREE.Mesh(supportGeo, baseMat);
-        support.position.set(0, -1, -6);
-        support.castShadow = true;
-        deviceGroup.add(support);
-
-        // Aksen Garis Neon Bawah
-        const accentGeo = new THREE.BoxGeometry(34.5, 0.3, 24.5);
-        const accentMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc }); // Basic material biar nyala
-        const accent = new THREE.Mesh(accentGeo, accentMat);
-        accent.position.y = -1;
-        base.add(accent);
-
-        // ==========================================
-        // BANTALAN KARET TEBAL (PRESSURE PADS)
-        // ==========================================
-        const pads = [];
-        const padMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x151515, 
-            roughness: 0.9, 
-            metalness: 0.1
-        });
-
-        const cylinderGeo = new THREE.CylinderGeometry(5.5, 5.8, 3, 32);
-        const domeGeo = new THREE.SphereGeometry(5.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
-        
-        function createPad(xPosition) {
-            const padGroup = new THREE.Group();
+        function setGear(gearNum, maxCPS) {
+            maxClicksPerSecond = maxCPS;
             
-            const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
-            cylinder.castShadow = true;
-            cylinder.receiveShadow = true;
+            // Update UI Button
+            document.getElementById('btn-gear1').classList.remove('active');
+            document.getElementById('btn-gear2').classList.remove('active');
+            document.getElementById('btn-gear3').classList.remove('active');
             
-            const dome = new THREE.Mesh(domeGeo, padMaterial);
-            dome.position.y = 1.5; 
-            dome.scale.y = 0.3; 
-            dome.castShadow = true;
-
-            const ringGeo = new THREE.TorusGeometry(6, 0.2, 16, 32);
-            // Ring highlight
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0x333333 }); 
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = -1.2;
-            ring.rotation.x = Math.PI/2;
-
-            padGroup.add(cylinder);
-            padGroup.add(dome);
-            padGroup.add(ring);
-
-            padGroup.position.set(xPosition, 3.5, 3);
-            padGroup.userData = { isPad: true, originalY: 3.5, ring: ring };
-
-            base.add(padGroup);
-            pads.push(padGroup);
-            
-            return padGroup;
+            document.getElementById('btn-gear' + gearNum).classList.add('active');
         }
 
         const leftPadGroup = createPad(-8.5);
@@ -365,6 +296,8 @@
         // ANIMATION LOOP
         // ==========================================
         const clock = new THREE.Clock();
+        const forceText = document.getElementById('text-force');
+        const outputText = document.getElementById('text-output');
 
         function animate() {
             requestAnimationFrame(animate);
@@ -379,23 +312,28 @@
                 if (pressureValue < 0) pressureValue = 0;
             }
 
+            // Kalkulasi Output Clicks Per Second (CPS) berdasarkan Gear
+            const currentCPS = Math.round((pressureValue / 100) * maxClicksPerSecond);
+
             // Update UI Teks
-            pressureUI.innerText = `FORCE: ${Math.round(pressureValue)}%`;
+            forceText.innerText = `USAHA (FORCE): ${Math.round(pressureValue)}%`;
+            outputText.innerText = `OUTPUT: ${currentCPS} Clicks/sec`;
+
             if(pressureValue > 80) {
                 pressureUI.style.borderColor = '#ff1100';
-                pressureUI.style.color = '#ff1100';
+                outputText.style.color = '#ff1100';
                 pressureUI.style.boxShadow = '0 0 20px rgba(255, 17, 0, 0.6)';
             } else if (pressureValue > 50) {
                 pressureUI.style.borderColor = '#ffea00';
-                pressureUI.style.color = '#ffea00';
+                outputText.style.color = '#ffea00';
                 pressureUI.style.boxShadow = '0 0 20px rgba(255, 234, 0, 0.4)';
             } else if (pressureValue > 0) {
                 pressureUI.style.borderColor = '#00ffcc';
-                pressureUI.style.color = '#00ffcc';
+                outputText.style.color = '#00ffcc';
                 pressureUI.style.boxShadow = '0 0 20px rgba(0, 255, 204, 0.3)';
             } else {
                 pressureUI.style.borderColor = '#555';
-                pressureUI.style.color = '#fff';
+                outputText.style.color = '#fff';
                 pressureUI.style.boxShadow = '0 0 20px rgba(0,0,0,0.8)';
             }
 
