@@ -17,6 +17,7 @@
             width: 100vw;
             height: 100vh;
             display: block;
+            touch-action: none; /* Mencegah pull-to-refresh di HP saat menyentuh canvas */
         }
         #ui-overlay {
             position: absolute;
@@ -83,7 +84,8 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        const canvasContainer = document.getElementById('canvas-container');
+        canvasContainer.appendChild(renderer.domElement);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -129,7 +131,6 @@
 
         // Bodi Utama (Tilted)
         const baseGeo = new THREE.BoxGeometry(32, 4, 22);
-        // Sedikit bevel pakai trik material normal atau biarkan kotak solid yang kokoh
         const baseMat = new THREE.MeshStandardMaterial({ 
             color: 0x2b2b2b, 
             roughness: 0.7,
@@ -166,7 +167,6 @@
             metalness: 0.1
         });
 
-        // Geometri Bantalan: Tabung tebal + Tutup Cembung
         const cylinderGeo = new THREE.CylinderGeometry(5, 5.2, 2.5, 32);
         const domeGeo = new THREE.SphereGeometry(5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
         
@@ -178,11 +178,10 @@
             cylinder.receiveShadow = true;
             
             const dome = new THREE.Mesh(domeGeo, padMaterial);
-            dome.position.y = 1.25; // Taruh cembung di atas tabung
-            dome.scale.y = 0.3; // Pipihkan cembungnya
+            dome.position.y = 1.25; 
+            dome.scale.y = 0.3; 
             dome.castShadow = true;
 
-            // Cincin bawah untuk indikator warna statis
             const ringGeo = new THREE.TorusGeometry(5.4, 0.2, 16, 32);
             const ringMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
@@ -196,15 +195,15 @@
             padGroup.position.set(xPosition, 3.5, 2);
             padGroup.userData = { name: name, originalY: 3.5, ring: ring };
             
-            // Tambahkan kotak hitbox transparan biar gampang diklik
+            // PERBAIKAN: Gunakan material transparan alih-alih visible: false agar raycaster bisa mendeteksinya
             const hitboxGeo = new THREE.CylinderGeometry(6, 6, 4, 16);
-            const hitboxMat = new THREE.MeshBasicMaterial({visible: false});
+            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
             const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
-            hitbox.userData = { parentGroup: padGroup }; // Link ke grup asli
+            hitbox.userData = { parentGroup: padGroup }; 
             padGroup.add(hitbox);
 
             base.add(padGroup);
-            pads.push(hitbox); // Yang di-raycast hitboxnya
+            pads.push(hitbox); 
             return padGroup;
         }
 
@@ -223,11 +222,9 @@
             const ledMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: 0x000000 });
             const led = new THREE.Mesh(ledGeo, ledMat);
             
-            // Susun berjejer
             led.position.x = -((totalLeds * 1.5)/2) + (i * 1.5) + 0.75;
             
-            // Simpan warna target berdasarkan posisi (Hijau -> Kuning -> Merah)
-            let hue = 0.3 - (i / totalLeds) * 0.3; // 0.3 = green, 0 = red
+            let hue = 0.3 - (i / totalLeds) * 0.3;
             let targetColor = new THREE.Color().setHSL(hue, 1, 0.5);
             led.userData = { defaultColor: 0x222222, activeColor: targetColor };
             
@@ -235,13 +232,12 @@
             leds.push(led);
         }
         ledGroup.position.set(0, 2.2, -6);
-        // Buat rumah LED nya
+        
         const ledCaseGeo = new THREE.BoxGeometry(22, 1, 2);
         const ledCase = new THREE.Mesh(ledCaseGeo, new THREE.MeshStandardMaterial({color: 0x111111}));
         ledCase.position.set(0, 2, -6);
         base.add(ledCase);
         base.add(ledGroup);
-
 
         // ==========================================
         // LOGIKA INTERAKSI (TEKANAN & SENSOR)
@@ -250,18 +246,31 @@
         const mouse = new THREE.Vector2();
         
         let isPressing = false;
-        let pressureValue = 0; // 0 sampai 100
+        let pressureValue = 0; 
         let activePad = null;
         const pressureUI = document.getElementById('pressure-info');
 
-        // Menangani input sentuhan & mouse
+        // PERBAIKAN: Kalkulasi posisi klik yang lebih akurat
         function startPress(event) {
-            event.preventDefault(); // Cegah scrolling di HP
-            let clientX = event.clientX || (event.touches && event.touches[0].clientX);
-            let clientY = event.clientY || (event.touches && event.touches[0].clientY);
+            // Mencegah konflik dengan kontrol orbit jika kita menekan pad
+            event.preventDefault();
 
-            mouse.x = (clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+            const rect = renderer.domElement.getBoundingClientRect();
+            let clientX, clientY;
+
+            if (event.changedTouches && event.changedTouches.length > 0) {
+                clientX = event.changedTouches[0].clientX;
+                clientY = event.changedTouches[0].clientY;
+            } else if (event.touches && event.touches.length > 0) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+
+            mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(pads);
@@ -271,7 +280,7 @@
                 activePad = intersects[0].object.userData.parentGroup;
                 activePad.userData.ring.material.color.setHex(0xffaa00);
                 activePad.userData.ring.material.emissive.setHex(0xffaa00);
-                controls.enabled = false; // Matikan kamera muter saat nekan
+                controls.enabled = false; 
             }
         }
 
@@ -285,8 +294,12 @@
             controls.enabled = true;
         }
 
-        window.addEventListener('mousedown', startPress);
-        window.addEventListener('touchstart', startPress, {passive: false});
+        // Pasang event listener langsung ke elemen canvas
+        const canvasEl = renderer.domElement;
+        canvasEl.addEventListener('mousedown', startPress);
+        canvasEl.addEventListener('touchstart', startPress, {passive: false});
+        
+        // Listener pelepasan di window agar tidak nyangkut saat kursor keluar batas
         window.addEventListener('mouseup', endPress);
         window.addEventListener('touchend', endPress);
 
@@ -307,18 +320,14 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
-            // 1. Update Nilai Tekanan (Pressure)
             if (isPressing) {
-                // Simulasi seolah-olah butuh waktu buat nekan sampai maksimal (build up)
                 pressureValue += 120 * delta; 
                 if (pressureValue > 100) pressureValue = 100;
             } else {
-                // Rilis cepat (pegas balik)
                 pressureValue -= 300 * delta;
                 if (pressureValue < 0) pressureValue = 0;
             }
 
-            // 2. Update Visual UI Teks
             pressureUI.innerText = `Force: ${Math.round(pressureValue)}%`;
             if(pressureValue > 80) {
                 pressureUI.style.borderColor = '#ff3b3b';
@@ -331,17 +340,13 @@
                 pressureUI.style.color = '#fff';
             }
 
-            // 3. Update Fisik Pad (Squish / Amblas ke bawah)
             if (activePad) {
-                // Turun maksimal 0.5 unit
                 activePad.position.y = activePad.userData.originalY - (pressureValue / 100) * 0.8;
             } else {
-                // Kembalikan semua pad ke posisi semula secara halus
                 leftPadGroup.position.y += (leftPadGroup.userData.originalY - leftPadGroup.position.y) * 0.2;
                 rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.2;
             }
 
-            // 4. Update LED Meter
             const activeLedCount = Math.floor((pressureValue / 100) * totalLeds);
             for(let i=0; i<totalLeds; i++) {
                 if (i < activeLedCount) {
@@ -358,7 +363,6 @@
             renderer.render(scene, camera);
         }
 
-        // Mulai Animasi
         animate();
     </script>
 </body>
