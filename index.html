@@ -72,11 +72,13 @@
         /* UI MODAL KALIBRASI */
         #calibration-modal {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 25%; /* DIPERBAIKI: Digeser ke atas agar tidak menutupi pad */
+            left: 50%;
             transform: translate(-50%, -50%);
             width: 450px;
             text-align: center;
             z-index: 100;
+            pointer-events: none; /* DIPERBAIKI: Agar klik tembus ke kanvas 3D di belakangnya */
         }
         #calibration-modal h2 { color: #ffeb3b; font-size: 28px; margin-bottom: 10px; }
         .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #ddd; }
@@ -100,6 +102,7 @@
             padding: 10px 30px; border: none; border-radius: 8px;
             font-weight: bold; cursor: pointer; transition: 0.2s;
             box-shadow: 0 0 15px rgba(0,255,204,0.4);
+            pointer-events: auto; /* DIPERBAIKI: Memastikan tombol tetap bisa diklik */
         }
         .btn-start:hover { background: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.6); }
 
@@ -115,7 +118,7 @@
     <!-- MODAL KALIBRASI (MUNCUL PERTAMA) -->
     <div id="calibration-modal" class="overlay-panel">
         <h2>⚠️ FASE KALIBRASI</h2>
-        <p class="calib-instruction">Alat harus menyesuaikan dengan batas maksimal tenaga Anda. <br><br><b>Tahan Klik (Hold) pada pad karet hitam</b> sekuat mungkin sampai indikator penuh!</p>
+        <p class="calib-instruction">Alat harus menyesuaikan dengan batas maksimal tenaga Anda. <br><br><b>Tahan Klik (Hold) pada pad karet hitam di bawah</b> sekuat mungkin sampai indikator penuh!</p>
         
         <div id="progress-bg">
             <div id="progress-bar"></div>
@@ -215,7 +218,7 @@
         }
 
         // ==========================================
-        // SETUP THREE.JS (YANG SEMPAT HILANG)
+        // SETUP THREE.JS
         // ==========================================
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a1a);
