@@ -3,139 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kinetic Force Pad 3D Prototype</title>
+    <title>Kinetic Force Pad - Simulasi FILKOM</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Nunito:wght@400;700&display=swap');
 
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #0d0d12;
-            font-family: 'Rajdhani', sans-serif;
-            color: white;
+            /* Latar belakang dasar terang */
+            background-color: #f4f7f6; 
+            font-family: 'Nunito', sans-serif;
+            color: #2c3e50;
             user-select: none;
         }
+
+        /* Hiasan Pola Background Estetik (Dot Matrix) */
+        .bg-pattern {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         #canvas-container {
             width: 100vw;
             height: 100vh;
             display: block;
             touch-action: none;
+            position: relative;
+            z-index: 1;
         }
         
-        /* Tema Glassmorphism/Cyberpunk */
+        /* Tema Light Glassmorphism */
         .glass-panel {
             position: absolute;
-            background: rgba(15, 15, 25, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 255, 204, 0.05);
-            padding: 20px;
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            border-radius: 20px;
             pointer-events: auto;
+            z-index: 10;
         }
 
+        /* --- Panel Utama Kiri --- */
         #ui-overlay {
             top: 20px;
             left: 20px;
-            width: 320px;
+            width: 340px;
         }
 
-        h1 { margin: 0 0 5px 0; font-family: 'Orbitron', sans-serif; font-size: 22px; color: #00ffcc; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,204,0.5);}
-        p { margin: 5px 0; font-size: 15px; color: #a0aab5; line-height: 1.4; pointer-events: none;}
-        .highlight { color: #ffeb3b; font-weight: bold; text-shadow: 0 0 5px rgba(255,235,59,0.5); }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #e2e8f0;
+        }
         
-        /* Gear Selector */
-        .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .logo-container img {
+            max-width: 180px;
+            height: auto;
+            /* Jika gambar tidak load, ada teks alternatif */
+        }
+
+        h1 { margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif; font-size: 22px; color: #0056a0; text-transform: uppercase; letter-spacing: 1px;}
+        p { margin: 5px 0; font-size: 15px; color: #475569; line-height: 1.5; pointer-events: none;}
+        .highlight { color: #f37021; font-weight: 800; }
+        
+        /* Gear Selector (Warna FILKOM Biru & Oranye) */
+        .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         .gear-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .gear-btn {
-            background: rgba(0,0,0,0.5); color: #fff; border: 1px solid #444;
-            padding: 8px 5px; border-radius: 6px; cursor: pointer;
-            font-family: 'Rajdhani', sans-serif; font-weight: bold; font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); flex: 1;
+            background: #f1f5f9; color: #64748b; border: 2px solid #cbd5e1;
+            padding: 8px 5px; border-radius: 8px; cursor: pointer;
+            font-family: 'Nunito', sans-serif; font-weight: bold; font-size: 14px;
+            transition: all 0.3s ease; flex: 1;
         }
-        .gear-btn:hover { background: rgba(0, 255, 204, 0.2); border-color: #00ffcc; }
+        .gear-btn:hover { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
         .gear-btn.active {
-            background: #00ffcc; color: #000; border-color: #00ffcc;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+            background: #0056a0; color: #fff; border-color: #0056a0;
+            box-shadow: 0 4px 12px rgba(0, 86, 160, 0.3);
         }
 
+        /* Panel Bawah (Indikator) */
         #pressure-info {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            font-family: 'Orbitron', sans-serif; text-align: center;
+            font-family: 'Montserrat', sans-serif; text-align: center;
             pointer-events: none; transition: all 0.2s;
+            border-width: 3px;
         }
-        .output-text { font-size: 38px; color: #00ffcc; margin-top: 0px; font-weight: 900; text-shadow: 0 0 15px rgba(0,255,204,0.6);}
-        #text-force { font-size: 18px; color: #fff; letter-spacing: 2px; margin-bottom: 5px;}
+        .output-text { font-size: 38px; color: #0056a0; margin-top: 0px; font-weight: 800; }
+        #text-force { font-size: 16px; color: #64748b; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px;}
 
-        /* UI MODAL KALIBRASI */
+        /* --- UI MODAL KALIBRASI --- */
         #calibration-modal {
             top: 25%; left: 50%; transform: translate(-50%, -50%);
-            width: 450px; text-align: center; z-index: 100;
+            width: 500px; text-align: center; z-index: 100;
             pointer-events: none; 
         }
-        #calibration-modal h2 { font-family: 'Orbitron', sans-serif; color: #ffeb3b; font-size: 26px; margin-bottom: 10px; text-shadow: 0 0 15px rgba(255,235,59,0.4); }
-        .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #ccc; }
+        #calibration-modal h2 { font-family: 'Montserrat', sans-serif; color: #f37021; font-size: 26px; margin-bottom: 10px; font-weight: 800;}
+        .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #475569; }
         
         #progress-bg {
-            width: 100%; height: 34px; background: rgba(0,0,0,0.6);
-            border-radius: 17px; border: 1px solid #555;
+            width: 100%; height: 34px; background: #e2e8f0;
+            border-radius: 17px; border: none;
             overflow: hidden; margin-bottom: 15px; position: relative;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
         #progress-bar {
-            width: 0%; height: 100%; background: linear-gradient(90deg, #00ffcc, #00b3ff);
-            transition: width 0.1s; box-shadow: 0 0 15px rgba(0,255,204,0.6);
+            width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #0056a0);
+            transition: width 0.1s;
         }
         #progress-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Orbitron', sans-serif; font-weight: 700; color: #fff; font-size: 14px;
-            text-shadow: 1px 1px 3px #000;
+            font-family: 'Montserrat', sans-serif; font-weight: 700; color: #fff; font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
         }
 
         .btn-start {
-            background: linear-gradient(45deg, #00ffcc, #00b3ff); color: #000; font-size: 16px;
-            padding: 10px 20px; border: none; border-radius: 8px; font-family: 'Orbitron', sans-serif;
-            font-weight: 900; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 0 15px rgba(0,255,204,0.4); pointer-events: auto; letter-spacing: 1px;
+            background: linear-gradient(135deg, #f37021, #fb923c); color: #fff; font-size: 16px;
+            padding: 12px 24px; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif;
+            font-weight: 700; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(243, 112, 33, 0.3); pointer-events: auto;
         }
-        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,204,0.7); }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 112, 33, 0.5); }
 
-        #calib-status { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: bold; color: #ff3b3b; height: 30px; margin-top: 10px;}
+        #calib-status { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; color: #ef4444; height: 30px; margin-top: 10px;}
 
         /* Profil Fisik */
-        .profile-panel { margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; background: rgba(0,0,0,0.3); }
+        .profile-panel { margin-bottom: 20px; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 12px; background: #f8fafc; }
         .profile-btn {
-            background: rgba(0,0,0,0.5); color: #fff; border: 1px solid #555;
-            padding: 6px 15px; border-radius: 5px; cursor: pointer; font-family: 'Rajdhani', sans-serif;
+            background: #fff; color: #64748b; border: 2px solid #cbd5e1;
+            padding: 8px 18px; border-radius: 8px; cursor: pointer; font-family: 'Nunito', sans-serif;
             font-weight: bold; margin: 0 5px; transition: 0.2s; font-size: 15px;
         }
-        .profile-btn.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 10px rgba(255,235,59,0.5); }
+        .profile-btn:hover { border-color: #94a3b8; color: #334155; }
+        .profile-btn.active { background: #0056a0; color: #fff; border-color: #0056a0; box-shadow: 0 4px 10px rgba(0, 86, 160, 0.3); }
 
-        /* --- MINI GAME UI --- */
+        /* --- MINI GAME UI (Kanan Atas) --- */
         #minigame-panel {
-            position: absolute; top: 20px; right: 20px; width: 300px;
-            display: none; /* Muncul saat mode PLAYING */
+            position: absolute; top: 20px; right: 20px; width: 320px;
+            display: none; 
         }
-        .mg-title { font-family: 'Orbitron', sans-serif; color: #ff3b3b; font-size: 16px; text-align: center; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,59,59,0.5);}
-        .mg-desc { font-size: 13px; text-align: center; color: #aaa; margin-bottom: 10px; line-height: 1.2;}
+        .mg-title { font-family: 'Montserrat', sans-serif; color: #ef4444; font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 8px;}
+        .mg-desc { font-size: 14px; text-align: center; color: #64748b; margin-bottom: 12px; line-height: 1.4; font-weight: 600;}
         .mg-bar-container {
-            height: 24px; background: rgba(0,0,0,0.8); border-radius: 12px;
-            border: 1px solid #444; position: relative; overflow: hidden;
+            height: 28px; background: #e2e8f0; border-radius: 14px;
+            border: none; position: relative; overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
         #mg-bar-fill {
-            height: 100%; width: 50%; background: linear-gradient(90deg, #ff3b3b, #ffeb3b, #00ffcc);
+            height: 100%; width: 30%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
             transition: width 0.1s;
         }
         #mg-status {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000;
+            font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
         #mg-overlay-msg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,255,204,0.9); color: #000; font-family: 'Orbitron', sans-serif;
-            font-weight: 900; font-size: 24px; display: flex; align-items: center; justify-content: center;
-            border-radius: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            background: rgba(16, 185, 129, 0.95); color: #fff; font-family: 'Montserrat', sans-serif;
+            font-weight: 900; font-size: 26px; display: flex; align-items: center; justify-content: center;
+            border-radius: 16px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
 
     </style>
@@ -145,20 +179,27 @@
 </head>
 <body>
 
+    <!-- Pola Latar Belakang -->
+    <div class="bg-pattern"></div>
+
     <!-- MODAL KALIBRASI -->
     <div id="calibration-modal" class="glass-panel">
+        <div class="logo-container">
+            <!-- INI PEMANGGILAN LOGO FILKOM -->
+            <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/f37021/ffffff?text=FILKOM+UB';">
+        </div>
         <h2>⚠️ FASE KALIBRASI</h2>
         <p class="calib-instruction">Alat harus memetakan limit fisik Anda. <br><b>Tahan Klik (Hold) pada bantalan di bawah</b> sekuat mungkin sampai indikator penuh!</p>
         
         <div class="profile-panel">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: #00ffcc; pointer-events: none;">Pilih Profil Fisik Anda:</p>
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #0056a0; font-weight: 800; pointer-events: none;">Pilih Profil Fisik Anda:</p>
             <button id="btn-prof-adult" class="profile-btn active" onclick="setProfile('adult')" style="pointer-events: auto;">Orang Dewasa</button>
             <button id="btn-prof-child" class="profile-btn" onclick="setProfile('child')" style="pointer-events: auto;">Anak Kecil</button>
         </div>
 
         <div id="progress-bg">
             <div id="progress-bar"></div>
-            <div id="progress-text">TAHAN: 0.0s / 3.0s</div>
+            <div id="progress-text">TAHAN PAD: 0.0s / 3.0s</div>
         </div>
         
         <div id="calib-status">MENUNGGU INPUT...</div>
@@ -167,20 +208,24 @@
     <!-- UI PLAY MODE -->
     <div id="ui-play" style="display: none;">
         <div id="ui-overlay" class="glass-panel">
+            <div class="logo-container">
+                <!-- INI PEMANGGILAN LOGO FILKOM -->
+                <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0056a0/ffffff?text=FILKOM+UB';">
+            </div>
             <h1>Kinetic Pad</h1>
-            <p style="color: #00ffcc; font-family: 'Orbitron', sans-serif; font-size: 12px;">SYSTEM ONLINE</p>
+            <p style="color: #10b981; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700;">● SYSTEM ONLINE</p>
             <br>
             <p>🛠️ <span class="highlight">Data Kalibrasi:</span></p>
-            <p id="info-max-force">Max Force: 0 Unit</p>
+            <p id="info-max-force">Kekuatan Fisik Maksimal: 0 Unit</p>
             
             <div class="gear-panel">
-                <p style="color: #fff; font-weight: bold; pointer-events: none; margin-bottom: 5px;">⚙️ GEAR MULTIPLIER (PvE):</p>
+                <p style="color: #475569; font-weight: 800; pointer-events: none; margin-bottom: 8px;">⚙️ GEAR MULTIPLIER (PvE):</p>
                 <div class="gear-buttons">
                     <button class="gear-btn active" onclick="setGear(1, 15)" id="btn-gear1">Gear 1<br><small>15 CPS</small></button>
                     <button class="gear-btn" onclick="setGear(2, 30)" id="btn-gear2">Gear 2<br><small>30 CPS</small></button>
                     <button class="gear-btn" onclick="setGear(3, 60)" id="btn-gear3">Gear 3<br><small>60 CPS</small></button>
                 </div>
-                <button class="btn-start" style="width: 100%; margin-top: 15px; font-size: 14px; padding: 10px;" onclick="resetToCalibration()">KALIBRASI ULANG</button>
+                <button class="btn-start" style="width: 100%; margin-top: 15px; font-size: 14px; padding: 10px;" onclick="resetToCalibration()">RESET KALIBRASI</button>
             </div>
         </div>
 
@@ -190,13 +235,13 @@
             <p class="mg-desc">Monster mendekat! Hasilkan kecepatan mashing tinggi untuk lari dan memenuhi bar ke 100%!</p>
             <div class="mg-bar-container">
                 <div id="mg-bar-fill"></div>
-                <div id="mg-status">JARAK: 50%</div>
+                <div id="mg-status">JARAK AMAN: 30%</div>
             </div>
             <div id="mg-overlay-msg">MISSION CLEAR!</div>
         </div>
 
         <div id="pressure-info" class="glass-panel">
-            <div id="text-force">USAHA (EFFORT): 0%</div>
+            <div id="text-force">PENGGUNAAN USAHA (EFFORT)</div>
             <div id="text-output" class="output-text">0 CPS</div>
         </div>
     </div>
@@ -266,7 +311,7 @@
             uiPlay.style.display = 'block';
             minigamePanel.style.display = 'block';
             
-            infoMaxForce.innerText = `Max Force: ${Math.round(maxCalibrationForce)} Unit`;
+            infoMaxForce.innerText = `Kekuatan Fisik Maksimal: ${Math.round(maxCalibrationForce)} Unit`;
             pressureValue = 0;
             
             // Reset Game
@@ -285,22 +330,23 @@
             minigamePanel.style.display = 'none';
             
             progressBar.style.width = '0%';
-            progressText.innerText = `TAHAN: 0.0s / 3.0s`;
+            progressText.innerText = `TAHAN PAD: 0.0s / 3.0s`;
             calibStatus.innerText = 'MENUNGGU INPUT...';
-            calibStatus.style.color = '#ff3b3b';
+            calibStatus.style.color = '#ef4444';
         }
 
         // ==========================================
-        // SETUP THREE.JS (TEMA CYBERPUNK)
+        // SETUP THREE.JS (TEMA TERANG / LIGHT TECH)
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0f);
-        scene.fog = new THREE.FogExp2(0x0a0a0f, 0.015);
+        // Background terang estetik
+        scene.background = new THREE.Color(0xf4f7f6);
+        scene.fog = new THREE.FogExp2(0xf4f7f6, 0.015);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 35, 50);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -313,32 +359,26 @@
         controls.minDistance = 20;
         controls.maxDistance = 80;
 
-        // Lighting keren
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        // Pencahayaan yang terang dan jelas
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-        dirLight.position.set(10, 30, 20);
+        dirLight.position.set(15, 30, 15);
         dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
         scene.add(dirLight);
 
-        const neonLight = new THREE.PointLight(0x00ffcc, 1.5, 50);
-        neonLight.position.set(0, 10, 0);
-        scene.add(neonLight);
-
-        const neonLight2 = new THREE.PointLight(0x0055ff, 1, 50);
-        neonLight2.position.set(-15, 5, -15);
-        scene.add(neonLight2);
-
-        // Grid Floor (Aesthetic Gamer)
-        const gridHelper = new THREE.GridHelper(200, 100, 0x00ffcc, 0x222233);
+        // Lantai Terang dengan Grid halus
+        const gridHelper = new THREE.GridHelper(200, 100, 0x0056a0, 0xcbd5e1);
         gridHelper.position.y = -4.9;
-        gridHelper.material.opacity = 0.4;
+        gridHelper.material.opacity = 0.5;
         gridHelper.material.transparent = true;
         scene.add(gridHelper);
 
         const floorGeo = new THREE.PlaneGeometry(200, 200);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.2, metalness: 0.8 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.position.y = -5;
@@ -351,8 +391,9 @@
         const deviceGroup = new THREE.Group();
         scene.add(deviceGroup);
 
+        // Bodi alat diubah menjadi warna putih/silver canggih
         const baseGeo = new THREE.BoxGeometry(32, 4, 22);
-        const baseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: 0.5, metalness: 0.5 });
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3, metalness: 0.4 });
         const base = new THREE.Mesh(baseGeo, baseMat);
         base.position.y = 2;
         base.rotation.x = Math.PI / 16; 
@@ -360,15 +401,16 @@
         base.receiveShadow = true;
         deviceGroup.add(base);
 
-        // Aksen Neon di bodi
-        const accentGeo = new THREE.BoxGeometry(32.5, 0.2, 22.5);
-        const accentMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+        // Aksen Garis Biru FILKOM di bodi
+        const accentGeo = new THREE.BoxGeometry(32.2, 0.2, 22.2);
+        const accentMat = new THREE.MeshBasicMaterial({ color: 0x0056a0 });
         const accent = new THREE.Mesh(accentGeo, accentMat);
-        accent.position.y = -1;
+        accent.position.y = -0.5;
         base.add(accent);
 
+        // Bantalan karet tetap warna hitam/abu gelap agar kontras
         const pads = [];
-        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0a0a0f, roughness: 0.8, metalness: 0.2 });
+        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, metalness: 0.1 });
         const cylinderGeo = new THREE.CylinderGeometry(5, 5.2, 2.5, 32);
         const domeGeo = new THREE.SphereGeometry(5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
 
@@ -381,7 +423,7 @@
             dome.position.y = 1.25; dome.scale.y = 0.3; dome.castShadow = true;
 
             const ringGeo = new THREE.TorusGeometry(5.4, 0.2, 32, 32);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0x333344 });
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.position.y = -1; ring.rotation.x = Math.PI/2;
 
@@ -405,22 +447,29 @@
         panelGroup.rotation.x = -Math.PI / 8;
         base.add(panelGroup);
 
+        // Bingkai LED
         const ledCaseGeo = new THREE.BoxGeometry(26, 4, 2);
-        const ledCaseMat = new THREE.MeshStandardMaterial({color: 0x050505, roughness: 0.4});
+        const ledCaseMat = new THREE.MeshStandardMaterial({color: 0xe2e8f0, roughness: 0.5});
         const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
         panelGroup.add(ledCase);
+        
+        // Papan hitam di dalam bingkai LED
+        const ledScreenGeo = new THREE.BoxGeometry(25, 3, 2.1);
+        const ledScreenMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.2});
+        const ledScreen = new THREE.Mesh(ledScreenGeo, ledScreenMat);
+        panelGroup.add(ledScreen);
 
         const totalLeds = 20; const ledSpacing = 1.1;
         const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
 
         for(let i=0; i<totalLeds; i++) {
             const ledGeo = new THREE.BoxGeometry(0.8, 1.8, 0.5);
-            const ledMat = new THREE.MeshBasicMaterial({ color: 0x111122 });
+            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 }); // Gelap saat mati
             const led = new THREE.Mesh(ledGeo, ledMat);
-            led.position.set(startX + (i * ledSpacing), 0, 1);
+            led.position.set(startX + (i * ledSpacing), 0, 1.2);
             
-            let colorHex = (i < totalLeds * 0.5) ? 0x00ffcc : (i < totalLeds * 0.8) ? 0xffeb3b : 0xff3b3b;
-            led.userData = { defaultColor: 0x111122, activeColor: colorHex };
+            let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
+            led.userData = { defaultColor: 0x334155, activeColor: colorHex };
             panelGroup.add(led); leds.push(led);
         }
 
@@ -453,7 +502,7 @@
                 activePad = getPadGroup(intersects[0].object);
                 if (activePad) {
                     isPressing = true;
-                    activePad.userData.ring.material.color.setHex(0x00ffcc);
+                    activePad.userData.ring.material.color.setHex(0x38bdf8);
                     controls.enabled = false; 
                 }
             }
@@ -461,7 +510,7 @@
 
         function endPress(event) {
             isPressing = false;
-            if(activePad) { activePad.userData.ring.material.color.setHex(0x333344); activePad = null; }
+            if(activePad) { activePad.userData.ring.material.color.setHex(0x94a3b8); activePad = null; }
             controls.enabled = true; 
         }
 
@@ -505,20 +554,20 @@
             if (appState === 'CALIBRATING') {
                 if (isPressing) {
                     holdTimer += delta;
-                    calibStatus.innerText = 'MEREKAM...'; calibStatus.style.color = '#00ffcc';
+                    calibStatus.innerText = 'MEREKAM...'; calibStatus.style.color = '#f59e0b';
                     if (pressureValue > maxCalibrationForce) maxCalibrationForce = pressureValue;
 
                     let progressPct = (holdTimer / REQUIRED_HOLD_TIME) * 100;
                     if(progressPct > 100) progressPct = 100;
                     progressBar.style.width = progressPct + '%';
-                    progressText.innerText = `TAHAN: ${holdTimer.toFixed(1)}s / 3.0s`;
+                    progressText.innerText = `TAHAN PAD: ${holdTimer.toFixed(1)}s / 3.0s`;
 
                     if (holdTimer >= REQUIRED_HOLD_TIME) finishCalibration();
                 } else {
                     if (holdTimer > 0 && holdTimer < REQUIRED_HOLD_TIME) {
                         holdTimer = 0; progressBar.style.width = '0%';
-                        progressText.innerText = `TAHAN: 0.0s / 3.0s`;
-                        calibStatus.innerText = 'GAGAL! TAHAN TERUS!'; calibStatus.style.color = '#ff3b3b';
+                        progressText.innerText = `TAHAN PAD: 0.0s / 3.0s`;
+                        calibStatus.innerText = 'GAGAL! TAHAN TERUS!'; calibStatus.style.color = '#ef4444';
                     }
                 }
                 effortPercentage = (pressureValue / 450) * 100; 
@@ -530,18 +579,18 @@
 
                 currentCPS = Math.round((effortPercentage / 100) * maxClicksPerSecond);
 
-                forceText.innerText = `EFFORT: ${Math.round(effortPercentage)}%`;
+                // Update Teks
                 outputText.innerText = `${currentCPS} CPS`;
 
                 if(effortPercentage > 80) {
-                    outputText.style.color = '#ff3b3b'; outputText.style.textShadow = '0 0 15px rgba(255,59,59,0.6)';
-                    pressureUI.style.borderColor = 'rgba(255,59,59,0.5)';
+                    outputText.style.color = '#ef4444'; 
+                    pressureUI.style.borderColor = 'rgba(239, 68, 68, 0.8)';
                 } else if (effortPercentage > 50) {
-                    outputText.style.color = '#ffeb3b'; outputText.style.textShadow = '0 0 15px rgba(255,235,59,0.6)';
-                    pressureUI.style.borderColor = 'rgba(255,235,59,0.5)';
+                    outputText.style.color = '#f59e0b'; 
+                    pressureUI.style.borderColor = 'rgba(245, 158, 11, 0.8)';
                 } else {
-                    outputText.style.color = '#00ffcc'; outputText.style.textShadow = '0 0 15px rgba(0,255,204,0.6)';
-                    pressureUI.style.borderColor = 'rgba(0,255,204,0.2)';
+                    outputText.style.color = '#0056a0'; 
+                    pressureUI.style.borderColor = 'rgba(0, 86, 160, 0.4)';
                 }
 
                 // LOGIKA MINI GAME PVE
@@ -558,11 +607,11 @@
                     }
 
                     mgBarFill.style.width = gameProgress + '%';
-                    mgStatus.innerText = `JARAK: ${Math.round(gameProgress)}%`;
+                    mgStatus.innerText = `JARAK AMAN: ${Math.round(gameProgress)}%`;
                     
-                    if(gameProgress < 20) { mgBarFill.style.background = '#ff3b3b'; }
-                    else if(gameProgress < 50) { mgBarFill.style.background = '#ffeb3b'; }
-                    else { mgBarFill.style.background = '#00ffcc'; }
+                    if(gameProgress < 20) { mgBarFill.style.background = '#ef4444'; }
+                    else if(gameProgress < 50) { mgBarFill.style.background = '#f59e0b'; }
+                    else { mgBarFill.style.background = '#10b981'; }
                 }
             }
 
@@ -580,9 +629,6 @@
                 if (i < activeLedCount) { leds[i].material.color.setHex(leds[i].userData.activeColor); } 
                 else { leds[i].material.color.setHex(leds[i].userData.defaultColor); }
             }
-
-            // Efek cahaya dinamis
-            neonLight.intensity = 0.5 + (effortPercentage / 100) * 1.5;
 
             controls.update();
             renderer.render(scene, camera);
