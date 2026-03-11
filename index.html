@@ -10,14 +10,12 @@
         body {
             margin: 0;
             overflow: hidden;
-            /* Latar belakang dasar terang */
             background-color: #f4f7f6; 
             font-family: 'Nunito', sans-serif;
             color: #2c3e50;
             user-select: none;
         }
 
-        /* Hiasan Pola Background Estetik (Dot Matrix) */
         .bg-pattern {
             position: absolute;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -37,7 +35,6 @@
             z-index: 1;
         }
         
-        /* Tema Light Glassmorphism */
         .glass-panel {
             position: absolute;
             background: rgba(255, 255, 255, 0.85);
@@ -51,7 +48,6 @@
             z-index: 10;
         }
 
-        /* --- Panel Utama Kiri --- */
         #ui-overlay {
             top: 20px;
             left: 20px;
@@ -74,7 +70,6 @@
         p { margin: 5px 0; font-size: 15px; color: #475569; line-height: 1.5; pointer-events: none;}
         .highlight { color: #f37021; font-weight: 800; }
         
-        /* Gear Selector */
         .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         .gear-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .gear-btn {
@@ -89,17 +84,16 @@
             box-shadow: 0 4px 12px rgba(0, 86, 160, 0.3);
         }
 
-        /* Panel Bawah (Indikator & Stamina) */
         #pressure-info {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             font-family: 'Montserrat', sans-serif; text-align: center;
             pointer-events: none; transition: all 0.2s;
-            border-width: 3px; min-width: 280px;
+            border-width: 3px; min-width: 300px;
         }
         .output-text { font-size: 38px; color: #0056a0; margin-top: 0px; font-weight: 800; }
-        #text-force { font-size: 16px; color: #64748b; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px;}
+        #text-force { font-size: 14px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px;}
+        #text-kg { font-size: 18px; color: #f37021; font-weight: 800; margin-bottom: 5px; } /* BARU: Teks Berat Kg */
 
-        /* TAMBAHAN: STAMINA BAR */
         #stamina-container {
             width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px;
             margin: 12px auto 6px auto; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
@@ -111,7 +105,6 @@
             font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #64748b;
         }
 
-        /* --- UI MODAL KALIBRASI --- */
         #calibration-modal {
             top: 25%; left: 50%; transform: translate(-50%, -50%);
             width: 500px; text-align: center; z-index: 100;
@@ -146,7 +139,6 @@
 
         #calib-status { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; color: #ef4444; height: 30px; margin-top: 10px;}
 
-        /* Profil Fisik */
         .profile-panel { margin-bottom: 20px; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 12px; background: #f8fafc; }
         .profile-btn {
             background: #fff; color: #64748b; border: 2px solid #cbd5e1;
@@ -156,7 +148,6 @@
         .profile-btn:hover { border-color: #94a3b8; color: #334155; }
         .profile-btn.active { background: #0056a0; color: #fff; border-color: #0056a0; box-shadow: 0 4px 10px rgba(0, 86, 160, 0.3); }
 
-        /* --- MINI GAME UI (Kanan Atas) --- */
         #minigame-panel {
             position: absolute; top: 20px; right: 20px; width: 320px;
             display: none; 
@@ -184,19 +175,15 @@
         }
 
     </style>
-    <!-- Import Three.js dan OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-    <!-- Pola Latar Belakang -->
     <div class="bg-pattern"></div>
 
-    <!-- MODAL KALIBRASI -->
     <div id="calibration-modal" class="glass-panel">
         <div class="logo-container">
-            <!-- INI PEMANGGILAN LOGO FILKOM -->
             <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/f37021/ffffff?text=FILKOM+UB';">
         </div>
         <h2>⚠️ FASE KALIBRASI</h2>
@@ -216,18 +203,17 @@
         <div id="calib-status">MENUNGGU INPUT...</div>
     </div>
 
-    <!-- UI PLAY MODE -->
     <div id="ui-play" style="display: none;">
         <div id="ui-overlay" class="glass-panel">
             <div class="logo-container">
-                <!-- INI PEMANGGILAN LOGO FILKOM -->
                 <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0056a0/ffffff?text=FILKOM+UB';">
             </div>
             <h1>Kinetic Pad</h1>
             <p style="color: #10b981; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700;">● SYSTEM ONLINE</p>
             <br>
             <p>🛠️ <span class="highlight">Data Kalibrasi:</span></p>
-            <p id="info-max-force">Kekuatan Fisik Maksimal: 0 Unit</p>
+            <!-- BARU: Teks Unit diubah jadi Kg -->
+            <p id="info-max-force">Kekuatan Fisik Maksimal: 0.0 Kg</p>
             
             <div class="gear-panel">
                 <p style="color: #475569; font-weight: 800; pointer-events: none; margin-bottom: 8px;">⚙️ GEAR MULTIPLIER (PvE):</p>
@@ -240,7 +226,6 @@
             </div>
         </div>
 
-        <!-- MINI GAME PANEL -->
         <div id="minigame-panel" class="glass-panel">
             <div class="mg-title">⚠️ PVE EVENT: ESCAPE!</div>
             <p class="mg-desc">Monster mendekat! Atur napas dan stamina ototmu untuk lari mencapai 100%!</p>
@@ -252,9 +237,10 @@
         </div>
 
         <div id="pressure-info" class="glass-panel">
-            <div id="text-force">PENGGUNAAN USAHA (EFFORT)</div>
+            <div id="text-force">USAHA FISIK (EFFORT)</div>
+            <!-- BARU: Penunjuk Kg Real-time -->
+            <div id="text-kg">BEBAN TEKANAN AKTIF: 0.0 Kg</div> 
             <div id="text-output" class="output-text">0 CPS</div>
-            <!-- TAMBAHAN: STAMINA UI -->
             <div id="stamina-container">
                 <div id="stamina-bar"></div>
             </div>
@@ -265,15 +251,14 @@
     <div id="canvas-container"></div>
 
     <script>
-        // ==========================================
-        // MANAJEMEN STATE APLIKASI
-        // ==========================================
         let appState = 'CALIBRATING'; 
         let maxCalibrationForce = 1;  
         let holdTimer = 0;            
         const REQUIRED_HOLD_TIME = 3.0; 
         
-        // Logika Profil Fisik
+        // Konstanta untuk mengubah nilai mentah menjadi berat Kg
+        const KG_CONVERSION = 30;
+
         let userStrengthRate = 150; 
         let userForceLimit = 450;   
 
@@ -284,15 +269,14 @@
             if (type === 'child') {
                 document.getElementById('btn-prof-child').classList.add('active');
                 userStrengthRate = 40;  
-                userForceLimit = 100;   
+                userForceLimit = 100;   // Setara ~3.3 Kg
             } else {
                 document.getElementById('btn-prof-adult').classList.add('active');
                 userStrengthRate = 150; 
-                userForceLimit = 450;   
+                userForceLimit = 450;   // Setara ~15.0 Kg
             }
         }
 
-        // Elemen UI
         const modalCalib = document.getElementById('calibration-modal');
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
@@ -302,12 +286,10 @@
         const minigamePanel = document.getElementById('minigame-panel');
         const infoMaxForce = document.getElementById('info-max-force');
 
-        // Elemen Stamina
         const staminaBar = document.getElementById('stamina-bar');
         const staminaLabel = document.getElementById('stamina-label');
-        let playerStamina = 100; // Stamina awal 100%
+        let playerStamina = 100;
 
-        // Logika Gear
         let maxClicksPerSecond = 15; 
         function setGear(gearNum, maxCPS) {
             maxClicksPerSecond = maxCPS;
@@ -317,8 +299,7 @@
             document.getElementById('btn-gear' + gearNum).classList.add('active');
         }
 
-        // Logika Mini-Game
-        let gameProgress = 30; // Mulai dari 30% jarak
+        let gameProgress = 30; 
         let gameActive = false;
         const mgBarFill = document.getElementById('mg-bar-fill');
         const mgStatus = document.getElementById('mg-status');
@@ -332,11 +313,12 @@
             uiPlay.style.display = 'block';
             minigamePanel.style.display = 'block';
             
-            infoMaxForce.innerText = `Kekuatan Fisik Maksimal: ${Math.round(maxCalibrationForce)} Unit`;
+            // BARU: Menampilkan hasil maksimal dalam Kg
+            const maxKg = (maxCalibrationForce / KG_CONVERSION).toFixed(1);
+            infoMaxForce.innerText = `Kekuatan Fisik Maksimal: ${maxKg} Kg`;
             pressureValue = 0;
-            playerStamina = 100; // Reset stamina saat mulai
+            playerStamina = 100; 
             
-            // Reset Game
             gameProgress = 30;
             gameActive = true;
             mgMsg.style.opacity = '0';
@@ -357,11 +339,7 @@
             calibStatus.style.color = '#ef4444';
         }
 
-        // ==========================================
-        // SETUP THREE.JS (TEMA TERANG / LIGHT TECH)
-        // ==========================================
         const scene = new THREE.Scene();
-        // Background terang estetik
         scene.background = new THREE.Color(0xf4f7f6);
         scene.fog = new THREE.FogExp2(0xf4f7f6, 0.015);
 
@@ -381,7 +359,6 @@
         controls.minDistance = 20;
         controls.maxDistance = 80;
 
-        // Pencahayaan yang terang dan jelas
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
@@ -392,7 +369,6 @@
         dirLight.shadow.mapSize.height = 2048;
         scene.add(dirLight);
 
-        // Lantai Terang dengan Grid halus
         const gridHelper = new THREE.GridHelper(200, 100, 0x0056a0, 0xcbd5e1);
         gridHelper.position.y = -4.9;
         gridHelper.material.opacity = 0.5;
@@ -407,13 +383,9 @@
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // ==========================================
-        // PEMBUATAN ALAT KINETIC PAD
-        // ==========================================
         const deviceGroup = new THREE.Group();
         scene.add(deviceGroup);
 
-        // Bodi alat diubah menjadi warna putih/silver canggih
         const baseGeo = new THREE.BoxGeometry(32, 4, 22);
         const baseMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3, metalness: 0.4 });
         const base = new THREE.Mesh(baseGeo, baseMat);
@@ -423,14 +395,12 @@
         base.receiveShadow = true;
         deviceGroup.add(base);
 
-        // Aksen Garis Biru FILKOM di bodi
         const accentGeo = new THREE.BoxGeometry(32.2, 0.2, 22.2);
         const accentMat = new THREE.MeshBasicMaterial({ color: 0x0056a0 });
         const accent = new THREE.Mesh(accentGeo, accentMat);
         accent.position.y = -0.5;
         base.add(accent);
 
-        // Bantalan karet tetap warna hitam/abu gelap agar kontras
         const pads = [];
         const padMaterial = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, metalness: 0.1 });
         const cylinderGeo = new THREE.CylinderGeometry(5, 5.2, 2.5, 32);
@@ -460,22 +430,17 @@
         const leftPadGroup = createPad(-8.5);
         const rightPadGroup = createPad(8.5);
 
-        // ==========================================
-        // PANEL LED DASHBOARD
-        // ==========================================
         const leds = [];
         const panelGroup = new THREE.Group();
         panelGroup.position.set(0, 3, -8);
         panelGroup.rotation.x = -Math.PI / 8;
         base.add(panelGroup);
 
-        // Bingkai LED
         const ledCaseGeo = new THREE.BoxGeometry(26, 4, 2);
         const ledCaseMat = new THREE.MeshStandardMaterial({color: 0xe2e8f0, roughness: 0.5});
         const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
         panelGroup.add(ledCase);
         
-        // Papan hitam di dalam bingkai LED
         const ledScreenGeo = new THREE.BoxGeometry(25, 3, 2.1);
         const ledScreenMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.2});
         const ledScreen = new THREE.Mesh(ledScreenGeo, ledScreenMat);
@@ -486,7 +451,7 @@
 
         for(let i=0; i<totalLeds; i++) {
             const ledGeo = new THREE.BoxGeometry(0.8, 1.8, 0.5);
-            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 }); // Gelap saat mati
+            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
             const led = new THREE.Mesh(ledGeo, ledMat);
             led.position.set(startX + (i * ledSpacing), 0, 1.2);
             
@@ -495,9 +460,6 @@
             panelGroup.add(led); leds.push(led);
         }
 
-        // ==========================================
-        // LOGIKA INTERAKSI & RAYCASTER
-        // ==========================================
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let isPressing = false; let activePad = null; let pressureValue = 0; 
@@ -549,11 +511,9 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // ==========================================
-        // ANIMATION LOOP UTAMA
-        // ==========================================
         const clock = new THREE.Clock();
         const forceText = document.getElementById('text-force');
+        const kgText = document.getElementById('text-kg'); // Referensi UI Kg
         const outputText = document.getElementById('text-output');
         const pressureUI = document.getElementById('pressure-info');
 
@@ -561,7 +521,6 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
-            // Fisika
             if (isPressing) {
                 pressureValue += userStrengthRate * delta; 
                 if (pressureValue > userForceLimit) pressureValue = userForceLimit; 
@@ -572,6 +531,9 @@
 
             let effortPercentage = 0;
             let currentCPS = 0;
+            
+            // Hitung nilai berat Kg real-time
+            const currentKg = (pressureValue / KG_CONVERSION).toFixed(1);
 
             if (appState === 'CALIBRATING') {
                 if (isPressing) {
@@ -599,18 +561,14 @@
                 effortPercentage = (pressureValue / maxCalibrationForce) * 100;
                 if (effortPercentage > 100) effortPercentage = 100; 
 
-                // --- SISTEM STAMINA OTOT (FATIGUE) ---
                 if (isPressing) {
-                    // Stamina terkuras jika menahan beban berat
                     playerStamina -= (effortPercentage / 100) * 15 * delta; 
                     if (playerStamina < 0) playerStamina = 0;
                 } else {
-                    // Stamina pulih saat dilepas (rest)
                     playerStamina += 30 * delta; 
                     if (playerStamina > 100) playerStamina = 100;
                 }
 
-                // Update UI Stamina
                 staminaBar.style.width = playerStamina + '%';
                 staminaLabel.innerText = `STAMINA OTOT: ${Math.round(playerStamina)}%`;
 
@@ -622,14 +580,14 @@
                     staminaBar.style.background = '#10b981'; staminaLabel.style.color = '#64748b';
                 }
 
-                // Kalkulasi Output dengan Pinalti Stamina
-                // Jika stamina habis, effort/tenaga yang tersalurkan anjlok drastis (simulasi kram/kelelahan)
                 let staminaPenalty = 0.2 + 0.8 * (playerStamina / 100); 
                 let effectiveEffort = effortPercentage * staminaPenalty;
 
                 currentCPS = Math.round((effectiveEffort / 100) * maxClicksPerSecond);
 
-                // Update Teks
+                // Update UI Teks
+                kgText.innerText = `BEBAN TEKANAN AKTIF: ${currentKg} Kg`;
+                forceText.innerText = `USAHA (EFFORT): ${Math.round(effortPercentage)}%`;
                 outputText.innerText = `${currentCPS} CPS`;
 
                 if(effortPercentage > 80) {
@@ -643,17 +601,16 @@
                     pressureUI.style.borderColor = 'rgba(0, 86, 160, 0.4)';
                 }
 
-                // LOGIKA MINI GAME PVE
                 if (gameActive) {
-                    const drainRate = 20; // Butuh 20 CPS untuk mengimbangi monster
-                    gameProgress -= drainRate * delta; // Monster mendekat
-                    gameProgress += currentCPS * delta; // Pemain lari
+                    const drainRate = 20; 
+                    gameProgress -= drainRate * delta; 
+                    gameProgress += currentCPS * delta; 
 
                     if (gameProgress < 0) gameProgress = 0;
                     if (gameProgress >= 100) {
                         gameProgress = 100;
                         gameActive = false;
-                        mgMsg.style.opacity = '1'; // Munculkan tulisan WIN
+                        mgMsg.style.opacity = '1'; 
                     }
 
                     mgBarFill.style.width = gameProgress + '%';
@@ -665,7 +622,6 @@
                 }
             }
 
-            // Animasi 3D Pad
             if (activePad) {
                 activePad.position.y = activePad.userData.originalY - (effortPercentage / 100) * 1.2;
             } else {
@@ -673,7 +629,6 @@
                 rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.3;
             }
 
-            // Animasi LED
             const activeLedCount = Math.floor((effortPercentage / 100) * totalLeds);
             for(let i=0; i<totalLeds; i++) {
                 if (i < activeLedCount) { leds[i].material.color.setHex(leds[i].userData.activeColor); } 
