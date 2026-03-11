@@ -68,14 +68,13 @@
         .logo-container img {
             max-width: 180px;
             height: auto;
-            /* Jika gambar tidak load, ada teks alternatif */
         }
 
         h1 { margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif; font-size: 22px; color: #0056a0; text-transform: uppercase; letter-spacing: 1px;}
         p { margin: 5px 0; font-size: 15px; color: #475569; line-height: 1.5; pointer-events: none;}
         .highlight { color: #f37021; font-weight: 800; }
         
-        /* Gear Selector (Warna FILKOM Biru & Oranye) */
+        /* Gear Selector */
         .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         .gear-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .gear-btn {
@@ -90,15 +89,27 @@
             box-shadow: 0 4px 12px rgba(0, 86, 160, 0.3);
         }
 
-        /* Panel Bawah (Indikator) */
+        /* Panel Bawah (Indikator & Stamina) */
         #pressure-info {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             font-family: 'Montserrat', sans-serif; text-align: center;
             pointer-events: none; transition: all 0.2s;
-            border-width: 3px;
+            border-width: 3px; min-width: 280px;
         }
         .output-text { font-size: 38px; color: #0056a0; margin-top: 0px; font-weight: 800; }
         #text-force { font-size: 16px; color: #64748b; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px;}
+
+        /* TAMBAHAN: STAMINA BAR */
+        #stamina-container {
+            width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px;
+            margin: 12px auto 6px auto; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #stamina-bar {
+            width: 100%; height: 100%; background: #10b981; transition: width 0.1s;
+        }
+        #stamina-label {
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #64748b;
+        }
 
         /* --- UI MODAL KALIBRASI --- */
         #calibration-modal {
@@ -232,7 +243,7 @@
         <!-- MINI GAME PANEL -->
         <div id="minigame-panel" class="glass-panel">
             <div class="mg-title">⚠️ PVE EVENT: ESCAPE!</div>
-            <p class="mg-desc">Monster mendekat! Hasilkan kecepatan mashing tinggi untuk lari dan memenuhi bar ke 100%!</p>
+            <p class="mg-desc">Monster mendekat! Atur napas dan stamina ototmu untuk lari mencapai 100%!</p>
             <div class="mg-bar-container">
                 <div id="mg-bar-fill"></div>
                 <div id="mg-status">JARAK AMAN: 30%</div>
@@ -243,6 +254,11 @@
         <div id="pressure-info" class="glass-panel">
             <div id="text-force">PENGGUNAAN USAHA (EFFORT)</div>
             <div id="text-output" class="output-text">0 CPS</div>
+            <!-- TAMBAHAN: STAMINA UI -->
+            <div id="stamina-container">
+                <div id="stamina-bar"></div>
+            </div>
+            <div id="stamina-label">STAMINA OTOT: 100%</div>
         </div>
     </div>
 
@@ -286,6 +302,11 @@
         const minigamePanel = document.getElementById('minigame-panel');
         const infoMaxForce = document.getElementById('info-max-force');
 
+        // Elemen Stamina
+        const staminaBar = document.getElementById('stamina-bar');
+        const staminaLabel = document.getElementById('stamina-label');
+        let playerStamina = 100; // Stamina awal 100%
+
         // Logika Gear
         let maxClicksPerSecond = 15; 
         function setGear(gearNum, maxCPS) {
@@ -313,6 +334,7 @@
             
             infoMaxForce.innerText = `Kekuatan Fisik Maksimal: ${Math.round(maxCalibrationForce)} Unit`;
             pressureValue = 0;
+            playerStamina = 100; // Reset stamina saat mulai
             
             // Reset Game
             gameProgress = 30;
@@ -577,7 +599,35 @@
                 effortPercentage = (pressureValue / maxCalibrationForce) * 100;
                 if (effortPercentage > 100) effortPercentage = 100; 
 
-                currentCPS = Math.round((effortPercentage / 100) * maxClicksPerSecond);
+                // --- SISTEM STAMINA OTOT (FATIGUE) ---
+                if (isPressing) {
+                    // Stamina terkuras jika menahan beban berat
+                    playerStamina -= (effortPercentage / 100) * 15 * delta; 
+                    if (playerStamina < 0) playerStamina = 0;
+                } else {
+                    // Stamina pulih saat dilepas (rest)
+                    playerStamina += 30 * delta; 
+                    if (playerStamina > 100) playerStamina = 100;
+                }
+
+                // Update UI Stamina
+                staminaBar.style.width = playerStamina + '%';
+                staminaLabel.innerText = `STAMINA OTOT: ${Math.round(playerStamina)}%`;
+
+                if (playerStamina < 20) {
+                    staminaBar.style.background = '#ef4444'; staminaLabel.style.color = '#ef4444';
+                } else if (playerStamina < 50) {
+                    staminaBar.style.background = '#f59e0b'; staminaLabel.style.color = '#f59e0b';
+                } else {
+                    staminaBar.style.background = '#10b981'; staminaLabel.style.color = '#64748b';
+                }
+
+                // Kalkulasi Output dengan Pinalti Stamina
+                // Jika stamina habis, effort/tenaga yang tersalurkan anjlok drastis (simulasi kram/kelelahan)
+                let staminaPenalty = 0.2 + 0.8 * (playerStamina / 100); 
+                let effectiveEffort = effortPercentage * staminaPenalty;
+
+                currentCPS = Math.round((effectiveEffort / 100) * maxClicksPerSecond);
 
                 // Update Teks
                 outputText.innerText = `${currentCPS} CPS`;
