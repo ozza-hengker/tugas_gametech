@@ -108,6 +108,15 @@
 
         #calib-status { font-size: 20px; font-weight: bold; color: #ff3b3b; height: 30px; margin-top: 10px;}
 
+        /* Tambahan Profil Fisik */
+        .profile-panel { margin-bottom: 20px; border: 1px dashed #555; padding: 10px; border-radius: 8px; }
+        .profile-btn {
+            background: #222; color: #fff; border: 2px solid #555;
+            padding: 5px 15px; border-radius: 5px; cursor: pointer;
+            font-weight: bold; margin: 0 5px; transition: 0.2s;
+        }
+        .profile-btn.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
+
     </style>
     <!-- Import Three.js dan OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -120,6 +129,12 @@
         <h2>⚠️ FASE KALIBRASI</h2>
         <p class="calib-instruction">Alat harus menyesuaikan dengan batas maksimal tenaga Anda. <br><br><b>Tahan Klik (Hold) pada pad karet hitam di bawah</b> sekuat mungkin sampai indikator penuh!</p>
         
+        <div class="profile-panel">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #00ffcc; pointer-events: none;">Simulasi Profil Fisik:</p>
+            <button id="btn-prof-adult" class="profile-btn active" onclick="setProfile('adult')" style="pointer-events: auto;">Dewasa (Kuat)</button>
+            <button id="btn-prof-child" class="profile-btn" onclick="setProfile('child')" style="pointer-events: auto;">Anak Kecil (Lemah)</button>
+        </div>
+
         <div id="progress-bg">
             <div id="progress-bar"></div>
             <div id="progress-text">Tahan Pad: 0.0s / 3.0s</div>
@@ -166,6 +181,25 @@
         let holdTimer = 0;            // Waktu menahan saat kalibrasi
         const REQUIRED_HOLD_TIME = 3.0; // Butuh 3 detik menahan
         
+        // Logika Profil Fisik
+        let userStrengthRate = 150; // Kecepatan tenaga naik
+        let userForceLimit = 450;   // Batas mentok tenaga
+
+        function setProfile(type) {
+            document.getElementById('btn-prof-adult').classList.remove('active');
+            document.getElementById('btn-prof-child').classList.remove('active');
+            
+            if (type === 'child') {
+                document.getElementById('btn-prof-child').classList.add('active');
+                userStrengthRate = 40;  // Tenaga naiknya lambat
+                userForceLimit = 100;   // Mentok di angka kecil
+            } else {
+                document.getElementById('btn-prof-adult').classList.add('active');
+                userStrengthRate = 150; // Tenaga naiknya cepat
+                userForceLimit = 450;   // Mentok di angka besar
+            }
+        }
+
         // Elemen UI Kalibrasi
         const modalCalib = document.getElementById('calibration-modal');
         const progressBar = document.getElementById('progress-bar');
@@ -424,7 +458,8 @@
             // 1. UPDATE FISIKA TEKANAN MENTAH
             // Saat diklik, diasumsikan user sedang mengerahkan tenaga seiring waktu
             if (isPressing) {
-                pressureValue += 150 * delta; 
+                pressureValue += userStrengthRate * delta; 
+                if (pressureValue > userForceLimit) pressureValue = userForceLimit; // Mentok sesuai profil fisik
             } else {
                 pressureValue -= 300 * delta;
                 if (pressureValue < 0) pressureValue = 0;
@@ -466,7 +501,7 @@
                 }
                 
                 // Visual amblas pad dan LED hanya berdasarkan nilai mentah saat kalibrasi
-                effortPercentage = (pressureValue / 200) * 100; // Asumsi 200 adalah batas wajar manusia normal di simulasi ini
+                effortPercentage = (pressureValue / 450) * 100; // Asumsi 450 adalah batas maksimal orang dewasa
                 if(effortPercentage > 100) effortPercentage = 100;
 
             } 
