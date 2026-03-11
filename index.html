@@ -194,16 +194,14 @@
 
             padGroup.position.set(xPosition, 3.5, 2);
             padGroup.userData = { name: name, originalY: 3.5, ring: ring };
-            
-            // PERBAIKAN: Gunakan material transparan alih-alih visible: false agar raycaster bisa mendeteksinya
-            const hitboxGeo = new THREE.CylinderGeometry(6, 6, 4, 16);
-            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
-            const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
-            hitbox.userData = { parentGroup: padGroup }; 
-            padGroup.add(hitbox);
 
             base.add(padGroup);
-            pads.push(hitbox); 
+            
+            // PERBAIKAN: Masukkan objek fisik nyata (silinder & kubah) ke dalam target klik
+            // bukan kotak transparan lagi.
+            pads.push(cylinder);
+            pads.push(dome);
+            
             return padGroup;
         }
 
@@ -250,9 +248,7 @@
         let activePad = null;
         const pressureUI = document.getElementById('pressure-info');
 
-        // PERBAIKAN: Kalkulasi posisi klik yang lebih akurat
         function startPress(event) {
-            // Mencegah konflik dengan kontrol orbit jika kita menekan pad
             event.preventDefault();
 
             const rect = renderer.domElement.getBoundingClientRect();
@@ -277,7 +273,8 @@
 
             if (intersects.length > 0) {
                 isPressing = true;
-                activePad = intersects[0].object.userData.parentGroup;
+                // Ambil parent group (padGroup) karena yang di-klik sekarang adalah silinder/kubahnya
+                activePad = intersects[0].object.parent;
                 activePad.userData.ring.material.color.setHex(0xffaa00);
                 activePad.userData.ring.material.emissive.setHex(0xffaa00);
                 controls.enabled = false; 
@@ -294,16 +291,31 @@
             controls.enabled = true;
         }
 
-        // Pasang event listener langsung ke elemen canvas
+        // PERBAIKAN UX: Ubah kursor jadi tangan saat hover di atas pad
+        function onMouseMove(event) {
+            if (isPressing) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(pads);
+            
+            if (intersects.length > 0) {
+                document.body.style.cursor = 'pointer';
+            } else {
+                document.body.style.cursor = 'default';
+            }
+        }
+
         const canvasEl = renderer.domElement;
         canvasEl.addEventListener('mousedown', startPress);
         canvasEl.addEventListener('touchstart', startPress, {passive: false});
+        canvasEl.addEventListener('mousemove', onMouseMove);
         
-        // Listener pelepasan di window agar tidak nyangkut saat kursor keluar batas
         window.addEventListener('mouseup', endPress);
         window.addEventListener('touchend', endPress);
 
-        // Menangani Resize Layar
         window.addEventListener('resize', onWindowResize, false);
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
