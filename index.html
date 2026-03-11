@@ -347,11 +347,10 @@
             calibStatus.style.color = '#ef4444';
         }
 
-        // FUNGSI BARU: Retry Mission
         function retryMission() {
             gameProgress = 30;
             gameActive = true;
-            playerStamina = 100; // Reset stamina otot biar siap lari lagi
+            playerStamina = 100; 
             mgMsg.style.opacity = '0';
             mgMsg.style.pointerEvents = 'none';
         }
@@ -412,6 +411,36 @@
         base.receiveShadow = true;
         deviceGroup.add(base);
 
+        // --- FITUR BARU: Grill Ventilasi Samping (Aesthetics) ---
+        const ventMaterial = new THREE.MeshBasicMaterial({ color: 0x334155 });
+        for (let i = 0; i < 4; i++) {
+            const ventGeo = new THREE.BoxGeometry(1.5, 1, 16);
+            
+            // Vent Kiri
+            const ventL = new THREE.Mesh(ventGeo, ventMaterial);
+            ventL.position.set(-16, 0.5 - (i * 0.4), 1);
+            base.add(ventL);
+            
+            // Vent Kanan
+            const ventR = new THREE.Mesh(ventGeo, ventMaterial);
+            ventR.position.set(16, 0.5 - (i * 0.4), 1);
+            base.add(ventR);
+        }
+
+        // --- FITUR BARU: Kabel USB Braided Tebal (Realism) ---
+        const cableCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 2.5, -8),      // Pangkal di belakang alat
+            new THREE.Vector3(0, -4.5, -15),    // Jatuh ke meja
+            new THREE.Vector3(8, -4.5, -25),    // Berkelok
+            new THREE.Vector3(20, -4.5, -35)    // Menjauh
+        ]);
+        const cableGeo = new THREE.TubeGeometry(cableCurve, 30, 0.6, 12, false);
+        const cableMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9, wireframe: false }); // Warna gelap
+        const cable = new THREE.Mesh(cableGeo, cableMat);
+        cable.castShadow = true;
+        scene.add(cable);
+
+        // Aksen Garis Biru FILKOM
         const accentGeo = new THREE.BoxGeometry(32.2, 0.2, 22.2);
         const accentMat = new THREE.MeshBasicMaterial({ color: 0x0056a0 });
         const accent = new THREE.Mesh(accentGeo, accentMat);
@@ -431,10 +460,11 @@
             const dome = new THREE.Mesh(domeGeo, padMaterial);
             dome.position.y = 1.25; dome.scale.y = 0.3; dome.castShadow = true;
 
-            const ringGeo = new THREE.TorusGeometry(5.4, 0.2, 32, 32);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
+            // --- FITUR BARU: Aura Cincin yang bisa membesar ---
+            const ringGeo = new THREE.TorusGeometry(5.4, 0.3, 32, 32);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = -1; ring.rotation.x = Math.PI/2;
+            ring.position.y = -1.2; ring.rotation.x = Math.PI/2;
 
             padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
             padGroup.position.set(xPosition, 3.5, 2);
@@ -511,7 +541,13 @@
 
         function endPress(event) {
             isPressing = false;
-            if(activePad) { activePad.userData.ring.material.color.setHex(0x94a3b8); activePad = null; }
+            if(activePad) { 
+                // Reset warna cincin
+                activePad.userData.ring.material.color.setHex(0x94a3b8); 
+                activePad.userData.ring.scale.set(1, 1, 1);
+                activePad.userData.ring.material.opacity = 0.5;
+                activePad = null; 
+            }
             controls.enabled = true; 
         }
 
@@ -533,6 +569,9 @@
         const kgText = document.getElementById('text-kg'); 
         const outputText = document.getElementById('text-output');
         const pressureUI = document.getElementById('pressure-info');
+
+        // Variabel untuk menyimpan posisi awal device agar getaran bisa kembali ke tengah
+        const baseOriginalPos = { x: deviceGroup.position.x, y: deviceGroup.position.y, z: deviceGroup.position.z };
 
         function animate() {
             requestAnimationFrame(animate);
@@ -626,7 +665,7 @@
                         gameProgress = 100;
                         gameActive = false;
                         mgMsg.style.opacity = '1'; 
-                        mgMsg.style.pointerEvents = 'auto'; // Mengaktifkan klik tombol Retry
+                        mgMsg.style.pointerEvents = 'auto'; 
                     }
 
                     mgBarFill.style.width = gameProgress + '%';
@@ -638,8 +677,35 @@
                 }
             }
 
+            // --- FITUR BARU: Efek Getaran (Shake Effect) ---
+            if (effortPercentage > 80 && isPressing) {
+                // Semakin tinggi effort, getaran makin kencang
+                const shakeIntensity = ((effortPercentage - 80) / 20) * 0.4; 
+                deviceGroup.position.x = baseOriginalPos.x + (Math.random() - 0.5) * shakeIntensity;
+                deviceGroup.position.z = baseOriginalPos.z + (Math.random() - 0.5) * shakeIntensity;
+            } else {
+                // Kembali tenang
+                deviceGroup.position.x = baseOriginalPos.x;
+                deviceGroup.position.z = baseOriginalPos.z;
+            }
+
+            // Animasi 3D Pad dan Aura Cincin Dinamis
             if (activePad) {
+                // Pad amblas
                 activePad.position.y = activePad.userData.originalY - (effortPercentage / 100) * 1.2;
+                
+                // Aura Cincin Meluas dan Menyala
+                const scaleAura = 1 + (effortPercentage / 100) * 0.3; // Membesar max 30%
+                activePad.userData.ring.scale.set(scaleAura, scaleAura, scaleAura);
+                activePad.userData.ring.material.opacity = 0.5 + (effortPercentage / 100) * 0.5; // Makin terang
+                
+                if (effortPercentage > 80) {
+                    activePad.userData.ring.material.color.setHex(0xef4444); // Merah kalau overload
+                } else if (effortPercentage > 50) {
+                    activePad.userData.ring.material.color.setHex(0xf59e0b); // Oranye kalau sedang
+                } else {
+                    activePad.userData.ring.material.color.setHex(0x38bdf8); // Biru awal
+                }
             } else {
                 leftPadGroup.position.y += (leftPadGroup.userData.originalY - leftPadGroup.position.y) * 0.3;
                 rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.3;
