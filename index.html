@@ -92,7 +92,7 @@
         }
         .output-text { font-size: 38px; color: #0056a0; margin-top: 0px; font-weight: 800; }
         #text-force { font-size: 14px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px;}
-        #text-kg { font-size: 18px; color: #f37021; font-weight: 800; margin-bottom: 5px; } /* BARU: Teks Berat Kg */
+        #text-kg { font-size: 18px; color: #f37021; font-weight: 800; margin-bottom: 5px; } 
 
         #stamina-container {
             width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px;
@@ -170,9 +170,17 @@
         #mg-overlay-msg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(16, 185, 129, 0.95); color: #fff; font-family: 'Montserrat', sans-serif;
-            font-weight: 900; font-size: 26px; display: flex; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: 16px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
+        .mg-overlay-title { font-weight: 900; font-size: 26px; margin-bottom: 10px; }
+        
+        .btn-retry {
+            background: #fff; color: #10b981; border: none; padding: 8px 20px;
+            border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800;
+            font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-retry:hover { background: #e2e8f0; transform: translateY(-2px); }
 
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -212,7 +220,6 @@
             <p style="color: #10b981; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700;">● SYSTEM ONLINE</p>
             <br>
             <p>🛠️ <span class="highlight">Data Kalibrasi:</span></p>
-            <!-- BARU: Teks Unit diubah jadi Kg -->
             <p id="info-max-force">Kekuatan Fisik Maksimal: 0.0 Kg</p>
             
             <div class="gear-panel">
@@ -233,12 +240,14 @@
                 <div id="mg-bar-fill"></div>
                 <div id="mg-status">JARAK AMAN: 30%</div>
             </div>
-            <div id="mg-overlay-msg">MISSION CLEAR!</div>
+            <div id="mg-overlay-msg">
+                <div class="mg-overlay-title">MISSION CLEAR!</div>
+                <button class="btn-retry" onclick="retryMission()" style="pointer-events: auto;">RETRY MISSION</button>
+            </div>
         </div>
 
         <div id="pressure-info" class="glass-panel">
             <div id="text-force">USAHA FISIK (EFFORT)</div>
-            <!-- BARU: Penunjuk Kg Real-time -->
             <div id="text-kg">BEBAN TEKANAN AKTIF: 0.0 Kg</div> 
             <div id="text-output" class="output-text">0 CPS</div>
             <div id="stamina-container">
@@ -256,7 +265,6 @@
         let holdTimer = 0;            
         const REQUIRED_HOLD_TIME = 3.0; 
         
-        // Konstanta untuk mengubah nilai mentah menjadi berat Kg
         const KG_CONVERSION = 30;
 
         let userStrengthRate = 150; 
@@ -269,11 +277,11 @@
             if (type === 'child') {
                 document.getElementById('btn-prof-child').classList.add('active');
                 userStrengthRate = 40;  
-                userForceLimit = 100;   // Setara ~3.3 Kg
+                userForceLimit = 100;   
             } else {
                 document.getElementById('btn-prof-adult').classList.add('active');
                 userStrengthRate = 150; 
-                userForceLimit = 450;   // Setara ~15.0 Kg
+                userForceLimit = 450;   
             }
         }
 
@@ -313,7 +321,6 @@
             uiPlay.style.display = 'block';
             minigamePanel.style.display = 'block';
             
-            // BARU: Menampilkan hasil maksimal dalam Kg
             const maxKg = (maxCalibrationForce / KG_CONVERSION).toFixed(1);
             infoMaxForce.innerText = `Kekuatan Fisik Maksimal: ${maxKg} Kg`;
             pressureValue = 0;
@@ -322,6 +329,7 @@
             gameProgress = 30;
             gameActive = true;
             mgMsg.style.opacity = '0';
+            mgMsg.style.pointerEvents = 'none';
         }
 
         function resetToCalibration() {
@@ -337,6 +345,15 @@
             progressText.innerText = `TAHAN PAD: 0.0s / 3.0s`;
             calibStatus.innerText = 'MENUNGGU INPUT...';
             calibStatus.style.color = '#ef4444';
+        }
+
+        // FUNGSI BARU: Retry Mission
+        function retryMission() {
+            gameProgress = 30;
+            gameActive = true;
+            playerStamina = 100; // Reset stamina otot biar siap lari lagi
+            mgMsg.style.opacity = '0';
+            mgMsg.style.pointerEvents = 'none';
         }
 
         const scene = new THREE.Scene();
@@ -513,7 +530,7 @@
 
         const clock = new THREE.Clock();
         const forceText = document.getElementById('text-force');
-        const kgText = document.getElementById('text-kg'); // Referensi UI Kg
+        const kgText = document.getElementById('text-kg'); 
         const outputText = document.getElementById('text-output');
         const pressureUI = document.getElementById('pressure-info');
 
@@ -532,7 +549,6 @@
             let effortPercentage = 0;
             let currentCPS = 0;
             
-            // Hitung nilai berat Kg real-time
             const currentKg = (pressureValue / KG_CONVERSION).toFixed(1);
 
             if (appState === 'CALIBRATING') {
@@ -585,7 +601,6 @@
 
                 currentCPS = Math.round((effectiveEffort / 100) * maxClicksPerSecond);
 
-                // Update UI Teks
                 kgText.innerText = `BEBAN TEKANAN AKTIF: ${currentKg} Kg`;
                 forceText.innerText = `USAHA (EFFORT): ${Math.round(effortPercentage)}%`;
                 outputText.innerText = `${currentCPS} CPS`;
@@ -611,6 +626,7 @@
                         gameProgress = 100;
                         gameActive = false;
                         mgMsg.style.opacity = '1'; 
+                        mgMsg.style.pointerEvents = 'auto'; // Mengaktifkan klik tombol Retry
                     }
 
                     mgBarFill.style.width = gameProgress + '%';
