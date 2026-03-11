@@ -193,14 +193,13 @@
             padGroup.add(ring);
 
             padGroup.position.set(xPosition, 3.5, 2);
-            padGroup.userData = { name: name, originalY: 3.5, ring: ring };
+            // Tanda pengenal khusus agar gampang dideteksi raycaster
+            padGroup.userData = { isPad: true, originalY: 3.5, ring: ring };
 
             base.add(padGroup);
             
-            // PERBAIKAN: Masukkan objek fisik nyata (silinder & kubah) ke dalam target klik
-            // bukan kotak transparan lagi.
-            pads.push(cylinder);
-            pads.push(dome);
+            // PERBAIKAN: Masukkan seluruh grup pad untuk dideteksi secara rekursif
+            pads.push(padGroup);
             
             return padGroup;
         }
@@ -248,36 +247,42 @@
         let activePad = null;
         const pressureUI = document.getElementById('pressure-info');
 
+        // Fungsi bantuan untuk mencari grup utama pad yang sedang diklik
+        function getPadGroup(object) {
+            let curr = object;
+            while(curr) {
+                if (curr.userData && curr.userData.isPad) return curr;
+                curr = curr.parent;
+            }
+            return null;
+        }
+
         function startPress(event) {
-            event.preventDefault();
+            // Gunakan event.clientX/Y langsung, lebih stabil di iframe/fullscreen
+            let clientX = event.clientX;
+            let clientY = event.clientY;
 
-            const rect = renderer.domElement.getBoundingClientRect();
-            let clientX, clientY;
-
-            if (event.changedTouches && event.changedTouches.length > 0) {
-                clientX = event.changedTouches[0].clientX;
-                clientY = event.changedTouches[0].clientY;
-            } else if (event.touches && event.touches.length > 0) {
+            // Jika ini dari touch screen HP
+            if (event.touches && event.touches.length > 0) {
                 clientX = event.touches[0].clientX;
                 clientY = event.touches[0].clientY;
-            } else {
-                clientX = event.clientX;
-                clientY = event.clientY;
             }
 
-            mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(pads);
+            // Parameter 'true' sangat penting agar mendeteksi semua bagian dalam grup
+            const intersects = raycaster.intersectObjects(pads, true);
 
             if (intersects.length > 0) {
-                isPressing = true;
-                // Ambil parent group (padGroup) karena yang di-klik sekarang adalah silinder/kubahnya
-                activePad = intersects[0].object.parent;
-                activePad.userData.ring.material.color.setHex(0xffaa00);
-                activePad.userData.ring.material.emissive.setHex(0xffaa00);
-                controls.enabled = false; 
+                activePad = getPadGroup(intersects[0].object);
+                if (activePad) {
+                    isPressing = true;
+                    activePad.userData.ring.material.color.setHex(0xffaa00);
+                    activePad.userData.ring.material.emissive.setHex(0xffaa00);
+                    controls.enabled = false; // Matikan rotasi kamera
+                }
             }
         }
 
@@ -288,20 +293,22 @@
                 activePad.userData.ring.material.emissive.setHex(0x000000);
                 activePad = null;
             }
-            controls.enabled = true;
+            controls.enabled = true; // Nyalakan lagi rotasi kamera
         }
 
-        // PERBAIKAN UX: Ubah kursor jadi tangan saat hover di atas pad
         function onMouseMove(event) {
             if (isPressing) return;
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            let clientX = event.clientX;
+            let clientY = event.clientY;
+            
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
             
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(pads);
+            const intersects = raycaster.intersectObjects(pads, true);
             
-            if (intersects.length > 0) {
+            if (intersects.length > 0 && getPadGroup(intersects[0].object)) {
                 document.body.style.cursor = 'pointer';
             } else {
                 document.body.style.cursor = 'default';
@@ -309,11 +316,15 @@
         }
 
         const canvasEl = renderer.domElement;
-        canvasEl.addEventListener('mousedown', startPress);
-        canvasEl.addEventListener('touchstart', startPress, {passive: false});
-        canvasEl.addEventListener('mousemove', onMouseMove);
+        // Gunakan PointerEvents yang lebih modern dan responsif
+        canvasEl.addEventListener('pointerdown', startPress);
+        canvasEl.addEventListener('pointermove', onMouseMove);
         
-        window.addEventListener('mouseup', endPress);
+        window.addEventListener('pointerup', endPress);
+        window.addEventListener('pointercancel', endPress);
+
+        // Fallback untuk touch murni jika browser lama
+        canvasEl.addEventListener('touchstart', startPress, {passive: false});
         window.addEventListener('touchend', endPress);
 
         window.addEventListener('resize', onWindowResize, false);
