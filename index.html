@@ -17,7 +17,7 @@
             width: 100vw;
             height: 100vh;
             display: block;
-            touch-action: none; /* Mencegah pull-to-refresh di HP saat menyentuh canvas */
+            touch-action: none;
         }
         #ui-overlay {
             position: absolute;
@@ -29,8 +29,9 @@
             border-radius: 12px;
             border: 1px solid #333;
             max-width: 350px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
-        h1 { margin: 0 0 10px 0; font-size: 20px; color: #00ffcc; }
+        h1 { margin: 0 0 10px 0; font-size: 20px; color: #00ffcc; text-transform: uppercase; letter-spacing: 1px;}
         p { margin: 5px 0; font-size: 14px; color: #ccc; line-height: 1.5; }
         .highlight { color: #ffeb3b; font-weight: bold; }
         
@@ -39,18 +40,20 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 900;
             color: #fff;
-            background: rgba(0,0,0,0.8);
-            padding: 10px 30px;
-            border-radius: 30px;
-            border: 2px solid #555;
+            background: rgba(10,10,10,0.9);
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: 3px solid #555;
             pointer-events: none;
             transition: all 0.1s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
         }
     </style>
-    <!-- Import Three.js dan OrbitControls dari CDN -->
+    <!-- Import Three.js dan OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
@@ -62,23 +65,22 @@
         <br>
         <p>🕹️ <span class="highlight">Instruksi Interaktif:</span></p>
         <p>1. <b>Klik Kiri dan Geser</b> untuk memutar sudut pandang.</p>
-        <p>2. <b>KLIK DAN TAHAN (Hold)</b> bantalan karet (pad) di tengah menggunakan mouse/sentuhan.</p>
-        <p>3. Perhatikan <b>LED Bar</b> dan angka <b>Force</b> di bawah. Semakin lama ditahan, simulasi tekanan membesar, merubah kekuatan dorong jadi sinyal mashing.</p>
+        <p>2. <b>KLIK DAN TAHAN (Hold)</b> bantalan karet (pad) di tengah.</p>
+        <p>3. Perhatikan <b>Panel LED Dashboard</b> menyala sesuai kekuatan tekanan Anda.</p>
     </div>
 
-    <div id="pressure-info">Force: 0%</div>
+    <div id="pressure-info">FORCE: 0%</div>
 
     <div id="canvas-container"></div>
 
     <script>
         // Setup Dasar Scene Three.js
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
-        // Tambah kabut tipis biar dramatis
-        scene.fog = new THREE.FogExp2(0x1a1a1a, 0.015);
+        scene.background = new THREE.Color(0x111111);
+        scene.fog = new THREE.FogExp2(0x111111, 0.015);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 30, 45);
+        camera.position.set(0, 35, 50); // Kamera sedikit lebih tinggi
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -90,32 +92,32 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 - 0.1; // Jangan sampai tembus lantai bawah
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; 
         controls.minDistance = 20;
         controls.maxDistance = 80;
 
-        // Pencahayaan (Studio Lighting)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        // Pencahayaan
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(10, 30, 20);
+        dirLight.position.set(10, 40, 20);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
         scene.add(dirLight);
 
-        const spotLight = new THREE.SpotLight(0x00ffcc, 0.5);
-        spotLight.position.set(-15, 20, 10);
+        const spotLight = new THREE.SpotLight(0x00ffcc, 0.4);
+        spotLight.position.set(-20, 30, 10);
         spotLight.angle = Math.PI/4;
         scene.add(spotLight);
 
         // Lantai Meja
         const floorGeo = new THREE.PlaneGeometry(200, 200);
         const floorMat = new THREE.MeshStandardMaterial({ 
-            color: 0x111111, 
-            roughness: 0.1, 
-            metalness: 0.5 
+            color: 0x0a0a0a, 
+            roughness: 0.2, 
+            metalness: 0.8 
         });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
@@ -129,32 +131,32 @@
         const deviceGroup = new THREE.Group();
         scene.add(deviceGroup);
 
-        // Bodi Utama (Tilted)
-        const baseGeo = new THREE.BoxGeometry(32, 4, 22);
+        // Bodi Utama
+        const baseGeo = new THREE.BoxGeometry(34, 4, 24);
         const baseMat = new THREE.MeshStandardMaterial({ 
-            color: 0x2b2b2b, 
-            roughness: 0.7,
-            metalness: 0.2
+            color: 0x222222, 
+            roughness: 0.8,
+            metalness: 0.3
         });
         const base = new THREE.Mesh(baseGeo, baseMat);
         base.position.y = 2;
-        base.rotation.x = Math.PI / 16; // Miring ke arah pemain (ergonomis)
+        base.rotation.x = Math.PI / 14; 
         base.castShadow = true;
         base.receiveShadow = true;
         deviceGroup.add(base);
 
-        // Kaki penyangga bawah biar bentuknya wedge solid
-        const supportGeo = new THREE.BoxGeometry(30, 6, 10);
+        // Kaki penyangga bawah 
+        const supportGeo = new THREE.BoxGeometry(32, 6, 12);
         const support = new THREE.Mesh(supportGeo, baseMat);
-        support.position.set(0, -1, -5);
+        support.position.set(0, -1, -6);
         support.castShadow = true;
         deviceGroup.add(support);
 
-        // Aksen Garis (Estetika)
-        const accentGeo = new THREE.BoxGeometry(32.5, 0.5, 22.5);
-        const accentMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00ffcc, emissiveIntensity: 0.2 });
+        // Aksen Garis Neon Bawah
+        const accentGeo = new THREE.BoxGeometry(34.5, 0.3, 24.5);
+        const accentMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc }); // Basic material biar nyala
         const accent = new THREE.Mesh(accentGeo, accentMat);
-        accent.position.y = 0;
+        accent.position.y = -1;
         base.add(accent);
 
         // ==========================================
@@ -163,14 +165,14 @@
         const pads = [];
         const padMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x151515, 
-            roughness: 0.9, // Kasar seperti karet
+            roughness: 0.9, 
             metalness: 0.1
         });
 
-        const cylinderGeo = new THREE.CylinderGeometry(5, 5.2, 2.5, 32);
-        const domeGeo = new THREE.SphereGeometry(5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
+        const cylinderGeo = new THREE.CylinderGeometry(5.5, 5.8, 3, 32);
+        const domeGeo = new THREE.SphereGeometry(5.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
         
-        function createPad(xPosition, name) {
+        function createPad(xPosition) {
             const padGroup = new THREE.Group();
             
             const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
@@ -178,66 +180,98 @@
             cylinder.receiveShadow = true;
             
             const dome = new THREE.Mesh(domeGeo, padMaterial);
-            dome.position.y = 1.25; 
+            dome.position.y = 1.5; 
             dome.scale.y = 0.3; 
             dome.castShadow = true;
 
-            const ringGeo = new THREE.TorusGeometry(5.4, 0.2, 16, 32);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const ringGeo = new THREE.TorusGeometry(6, 0.2, 16, 32);
+            // Ring highlight
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x333333 }); 
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = -1;
+            ring.position.y = -1.2;
             ring.rotation.x = Math.PI/2;
 
             padGroup.add(cylinder);
             padGroup.add(dome);
             padGroup.add(ring);
 
-            padGroup.position.set(xPosition, 3.5, 2);
-            // Tanda pengenal khusus agar gampang dideteksi raycaster
+            padGroup.position.set(xPosition, 3.5, 3);
             padGroup.userData = { isPad: true, originalY: 3.5, ring: ring };
 
             base.add(padGroup);
-            
-            // PERBAIKAN: Masukkan seluruh grup pad untuk dideteksi secara rekursif
             pads.push(padGroup);
             
             return padGroup;
         }
 
-        const leftPadGroup = createPad(-8, 'Left Pad');
-        const rightPadGroup = createPad(8, 'Right Pad');
+        const leftPadGroup = createPad(-8.5);
+        const rightPadGroup = createPad(8.5);
 
         // ==========================================
-        // LED METER (VISUALISASI KALIBRASI / TEKANAN)
+        // PANEL LED DASHBOARD (DIPERBESAR & DIPERJELAS)
         // ==========================================
         const leds = [];
-        const ledGroup = new THREE.Group();
-        const totalLeds = 14;
-        
+        const panelGroup = new THREE.Group();
+        // Posisikan panel di bagian belakang atas alat, dimiringkan agar menghadap mata pemain
+        panelGroup.position.set(0, 3, -8);
+        panelGroup.rotation.x = -Math.PI / 8;
+        base.add(panelGroup);
+
+        // Casing Panel Hitam
+        const ledCaseGeo = new THREE.BoxGeometry(26, 4, 2);
+        const ledCaseMat = new THREE.MeshStandardMaterial({color: 0x050505, roughness: 0.4});
+        const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
+        ledCase.castShadow = true;
+        panelGroup.add(ledCase);
+
+        // Kaca Pelindung Panel (agak transparan dan mengkilap)
+        const glassGeo = new THREE.BoxGeometry(25, 3, 0.2);
+        const glassMat = new THREE.MeshStandardMaterial({
+            color: 0x000000, 
+            roughness: 0.1, 
+            metalness: 0.9, 
+            transparent: true, 
+            opacity: 0.6
+        });
+        const glass = new THREE.Mesh(glassGeo, glassMat);
+        glass.position.z = 1.05;
+        panelGroup.add(glass);
+
+        // Membangun Blok LED
+        const totalLeds = 20; // Perbanyak jumlah LED agar lebih detail
+        const ledWidth = 0.8;
+        const ledSpacing = 1.1;
+        const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
+
         for(let i=0; i<totalLeds; i++) {
-            const ledGeo = new THREE.BoxGeometry(1.2, 0.4, 1);
-            const ledMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: 0x000000 });
+            const ledGeo = new THREE.BoxGeometry(ledWidth, 1.8, 0.5);
+            // Gunakan MeshBasicMaterial untuk default agar tetap terlihat sedikit (tidak hitam pekat)
+            const ledMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
             const led = new THREE.Mesh(ledGeo, ledMat);
             
-            led.position.x = -((totalLeds * 1.5)/2) + (i * 1.5) + 0.75;
+            led.position.set(startX + (i * ledSpacing), 0, 0.8); // Taruh tepat di belakang kaca
             
-            let hue = 0.3 - (i / totalLeds) * 0.3;
-            let targetColor = new THREE.Color().setHSL(hue, 1, 0.5);
-            led.userData = { defaultColor: 0x222222, activeColor: targetColor };
+            // Logika Warna Bergradasi (Kiri Hijau -> Tengah Kuning -> Kanan Merah)
+            let colorHex;
+            if(i < totalLeds * 0.5) {
+                colorHex = 0x00ff44; // Hijau
+            } else if (i < totalLeds * 0.8) {
+                colorHex = 0xffea00; // Kuning
+            } else {
+                colorHex = 0xff1100; // Merah
+            }
             
-            ledGroup.add(led);
+            led.userData = { 
+                defaultColor: 0x2a2a2a, 
+                activeColor: colorHex 
+            };
+            
+            panelGroup.add(led);
             leds.push(led);
         }
-        ledGroup.position.set(0, 2.2, -6);
-        
-        const ledCaseGeo = new THREE.BoxGeometry(22, 1, 2);
-        const ledCase = new THREE.Mesh(ledCaseGeo, new THREE.MeshStandardMaterial({color: 0x111111}));
-        ledCase.position.set(0, 2, -6);
-        base.add(ledCase);
-        base.add(ledGroup);
 
         // ==========================================
-        // LOGIKA INTERAKSI (TEKANAN & SENSOR)
+        // LOGIKA INTERAKSI (RAYCASTER & MOUSE)
         // ==========================================
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -247,7 +281,6 @@
         let activePad = null;
         const pressureUI = document.getElementById('pressure-info');
 
-        // Fungsi bantuan untuk mencari grup utama pad yang sedang diklik
         function getPadGroup(object) {
             let curr = object;
             while(curr) {
@@ -258,11 +291,11 @@
         }
 
         function startPress(event) {
-            // Gunakan event.clientX/Y langsung, lebih stabil di iframe/fullscreen
+            event.preventDefault();
+
             let clientX = event.clientX;
             let clientY = event.clientY;
 
-            // Jika ini dari touch screen HP
             if (event.touches && event.touches.length > 0) {
                 clientX = event.touches[0].clientX;
                 clientY = event.touches[0].clientY;
@@ -272,16 +305,15 @@
             mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            // Parameter 'true' sangat penting agar mendeteksi semua bagian dalam grup
             const intersects = raycaster.intersectObjects(pads, true);
 
             if (intersects.length > 0) {
                 activePad = getPadGroup(intersects[0].object);
                 if (activePad) {
                     isPressing = true;
-                    activePad.userData.ring.material.color.setHex(0xffaa00);
-                    activePad.userData.ring.material.emissive.setHex(0xffaa00);
-                    controls.enabled = false; // Matikan rotasi kamera
+                    // Ubah warna ring jadi nyala cyan saat ditekan
+                    activePad.userData.ring.material.color.setHex(0x00ffcc);
+                    controls.enabled = false; 
                 }
             }
         }
@@ -290,10 +322,9 @@
             isPressing = false;
             if(activePad) {
                 activePad.userData.ring.material.color.setHex(0x333333);
-                activePad.userData.ring.material.emissive.setHex(0x000000);
                 activePad = null;
             }
-            controls.enabled = true; // Nyalakan lagi rotasi kamera
+            controls.enabled = true; 
         }
 
         function onMouseMove(event) {
@@ -316,14 +347,10 @@
         }
 
         const canvasEl = renderer.domElement;
-        // Gunakan PointerEvents yang lebih modern dan responsif
         canvasEl.addEventListener('pointerdown', startPress);
         canvasEl.addEventListener('pointermove', onMouseMove);
-        
         window.addEventListener('pointerup', endPress);
         window.addEventListener('pointercancel', endPress);
-
-        // Fallback untuk touch murni jika browser lama
         canvasEl.addEventListener('touchstart', startPress, {passive: false});
         window.addEventListener('touchend', endPress);
 
@@ -335,7 +362,7 @@
         }
 
         // ==========================================
-        // GAME LOOP / ANIMATION (UPDATE PRESSURE)
+        // ANIMATION LOOP
         // ==========================================
         const clock = new THREE.Clock();
 
@@ -343,42 +370,50 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
+            // Update Nilai Tekanan
             if (isPressing) {
                 pressureValue += 120 * delta; 
                 if (pressureValue > 100) pressureValue = 100;
             } else {
-                pressureValue -= 300 * delta;
+                pressureValue -= 250 * delta;
                 if (pressureValue < 0) pressureValue = 0;
             }
 
-            pressureUI.innerText = `Force: ${Math.round(pressureValue)}%`;
+            // Update UI Teks
+            pressureUI.innerText = `FORCE: ${Math.round(pressureValue)}%`;
             if(pressureValue > 80) {
-                pressureUI.style.borderColor = '#ff3b3b';
-                pressureUI.style.color = '#ff3b3b';
-            } else if (pressureValue > 40) {
-                pressureUI.style.borderColor = '#ffeb3b';
-                pressureUI.style.color = '#ffeb3b';
+                pressureUI.style.borderColor = '#ff1100';
+                pressureUI.style.color = '#ff1100';
+                pressureUI.style.boxShadow = '0 0 20px rgba(255, 17, 0, 0.6)';
+            } else if (pressureValue > 50) {
+                pressureUI.style.borderColor = '#ffea00';
+                pressureUI.style.color = '#ffea00';
+                pressureUI.style.boxShadow = '0 0 20px rgba(255, 234, 0, 0.4)';
+            } else if (pressureValue > 0) {
+                pressureUI.style.borderColor = '#00ffcc';
+                pressureUI.style.color = '#00ffcc';
+                pressureUI.style.boxShadow = '0 0 20px rgba(0, 255, 204, 0.3)';
             } else {
                 pressureUI.style.borderColor = '#555';
                 pressureUI.style.color = '#fff';
+                pressureUI.style.boxShadow = '0 0 20px rgba(0,0,0,0.8)';
             }
 
+            // Animasi Amblas Pad
             if (activePad) {
-                activePad.position.y = activePad.userData.originalY - (pressureValue / 100) * 0.8;
+                activePad.position.y = activePad.userData.originalY - (pressureValue / 100) * 1.2;
             } else {
-                leftPadGroup.position.y += (leftPadGroup.userData.originalY - leftPadGroup.position.y) * 0.2;
-                rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.2;
+                leftPadGroup.position.y += (leftPadGroup.userData.originalY - leftPadGroup.position.y) * 0.3;
+                rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.3;
             }
 
+            // Animasi LED Meter Dashboard (Menyala Terang)
             const activeLedCount = Math.floor((pressureValue / 100) * totalLeds);
             for(let i=0; i<totalLeds; i++) {
                 if (i < activeLedCount) {
-                    leds[i].material.color.copy(leds[i].userData.activeColor);
-                    leds[i].material.emissive.copy(leds[i].userData.activeColor);
-                    leds[i].material.emissiveIntensity = 1;
+                    leds[i].material.color.setHex(leds[i].userData.activeColor);
                 } else {
-                    leds[i].material.color.setHex(0x222222);
-                    leds[i].material.emissive.setHex(0x000000);
+                    leds[i].material.color.setHex(leds[i].userData.defaultColor);
                 }
             }
 
