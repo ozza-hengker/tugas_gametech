@@ -402,7 +402,8 @@
         const deviceGroup = new THREE.Group();
         scene.add(deviceGroup);
 
-        const baseGeo = new THREE.BoxGeometry(32, 4, 22);
+        // --- DIPERLEBAR: Bodi alat menjadi 44 unit agar muat banyak tombol ---
+        const baseGeo = new THREE.BoxGeometry(44, 4, 22);
         const baseMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3, metalness: 0.4 });
         const base = new THREE.Mesh(baseGeo, baseMat);
         base.position.y = 2;
@@ -411,48 +412,101 @@
         base.receiveShadow = true;
         deviceGroup.add(base);
 
-        // --- FITUR BARU: Grill Ventilasi Samping (Aesthetics) ---
+        // Grill Ventilasi Samping disesuaikan dengan bodi baru
         const ventMaterial = new THREE.MeshBasicMaterial({ color: 0x334155 });
         for (let i = 0; i < 4; i++) {
             const ventGeo = new THREE.BoxGeometry(1.5, 1, 16);
             
             // Vent Kiri
             const ventL = new THREE.Mesh(ventGeo, ventMaterial);
-            ventL.position.set(-16, 0.5 - (i * 0.4), 1);
+            ventL.position.set(-22, 0.5 - (i * 0.4), 1);
             base.add(ventL);
             
             // Vent Kanan
             const ventR = new THREE.Mesh(ventGeo, ventMaterial);
-            ventR.position.set(16, 0.5 - (i * 0.4), 1);
+            ventR.position.set(22, 0.5 - (i * 0.4), 1);
             base.add(ventR);
         }
 
-        // --- FITUR BARU: Kabel USB Braided Tebal (Realism) ---
+        // Kabel USB Braided
         const cableCurve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 2.5, -8),      // Pangkal di belakang alat
-            new THREE.Vector3(0, -4.5, -15),    // Jatuh ke meja
-            new THREE.Vector3(8, -4.5, -25),    // Berkelok
-            new THREE.Vector3(20, -4.5, -35)    // Menjauh
+            new THREE.Vector3(0, 2.5, -8),      
+            new THREE.Vector3(0, -4.5, -15),    
+            new THREE.Vector3(8, -4.5, -25),    
+            new THREE.Vector3(20, -4.5, -35)    
         ]);
         const cableGeo = new THREE.TubeGeometry(cableCurve, 30, 0.6, 12, false);
-        const cableMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9, wireframe: false }); // Warna gelap
+        const cableMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9, wireframe: false }); 
         const cable = new THREE.Mesh(cableGeo, cableMat);
         cable.castShadow = true;
         scene.add(cable);
 
-        // Aksen Garis Biru FILKOM
-        const accentGeo = new THREE.BoxGeometry(32.2, 0.2, 22.2);
+        // Aksen Garis Biru FILKOM diperpanjang
+        const accentGeo = new THREE.BoxGeometry(44.2, 0.2, 22.2);
         const accentMat = new THREE.MeshBasicMaterial({ color: 0x0056a0 });
         const accent = new THREE.Mesh(accentGeo, accentMat);
         accent.position.y = -0.5;
         base.add(accent);
 
-        const pads = [];
-        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, metalness: 0.1 });
+        const pads = []; // Array untuk deteksi semua tombol oleh raycaster
+        const mainPads = []; // Array khusus untuk tombol mashing utama
+        
+        // ==========================================
+        // 1. PEMBUATAN D-PAD (TOMBOL ARAH) KIRI
+        // ==========================================
+        const dpadGroup = new THREE.Group();
+        const dpadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8, metalness: 0.2 });
+        const dpadVGeo = new THREE.BoxGeometry(2.8, 1.2, 9); // Vertikal
+        const dpadHGeo = new THREE.BoxGeometry(9, 1.2, 2.8); // Horizontal
+        
+        const dpadV = new THREE.Mesh(dpadVGeo, dpadMat); dpadV.castShadow = true;
+        const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true;
+        dpadV.position.y = 0.6; dpadH.position.y = 0.6;
+        dpadGroup.add(dpadV); dpadGroup.add(dpadH);
+        
+        // Cincin dekorasi D-Pad
+        const dpadRingGeo = new THREE.TorusGeometry(5.8, 0.2, 4, 4); // Bentuk kotak belah ketupat
+        const dpadRingMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.4 });
+        const dpadRing = new THREE.Mesh(dpadRingGeo, dpadRingMat);
+        dpadRing.position.y = -0.2; dpadRing.rotation.x = Math.PI/2; dpadRing.rotation.z = Math.PI/4;
+        dpadGroup.add(dpadRing);
+
+        dpadGroup.position.set(-13, 3.5, 2);
+        dpadGroup.userData = { isPad: true, type: 'dpad', originalY: 3.5, ring: dpadRing };
+        base.add(dpadGroup);
+        pads.push(dpadGroup);
+
+        // ==========================================
+        // 2. PEMBUATAN TOMBOL AUX (START/SELECT)
+        // ==========================================
+        function createAuxButton(xPosition, zPosition) {
+            const auxGroup = new THREE.Group();
+            const auxGeo = new THREE.CylinderGeometry(1.2, 1.4, 1.2, 24);
+            const auxMesh = new THREE.Mesh(auxGeo, dpadMat);
+            auxMesh.position.y = 0.6; auxMesh.castShadow = true;
+            
+            const ringGeo = new THREE.TorusGeometry(1.7, 0.15, 16, 24);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.y = 0; ring.rotation.x = Math.PI/2;
+            
+            auxGroup.add(auxMesh); auxGroup.add(ring);
+            auxGroup.position.set(xPosition, 3.5, zPosition);
+            auxGroup.userData = { isPad: true, type: 'aux', originalY: 3.5, ring: ring };
+            
+            base.add(auxGroup); pads.push(auxGroup);
+        }
+        createAuxButton(-16, -4); // Select
+        createAuxButton(-10, -4); // Start
+
+        // ==========================================
+        // 3. PEMBUATAN MAIN KINETIC PADS (KANAN)
+        // ==========================================
+        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9, metalness: 0.1 }); // Lebih gelap dikit
         const cylinderGeo = new THREE.CylinderGeometry(5, 5.2, 2.5, 32);
         const domeGeo = new THREE.SphereGeometry(5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
 
-        function createPad(xPosition) {
+        function createMainPad(xPosition) {
             const padGroup = new THREE.Group();
             
             const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
@@ -460,7 +514,6 @@
             const dome = new THREE.Mesh(domeGeo, padMaterial);
             dome.position.y = 1.25; dome.scale.y = 0.3; dome.castShadow = true;
 
-            // --- FITUR BARU: Aura Cincin yang bisa membesar ---
             const ringGeo = new THREE.TorusGeometry(5.4, 0.3, 32, 32);
             const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
@@ -468,32 +521,41 @@
 
             padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
             padGroup.position.set(xPosition, 3.5, 2);
-            padGroup.userData = { isPad: true, originalY: 3.5, ring: ring };
+            
+            // Type diset sebagai 'main' agar logika Mashing hanya jalan di tombol ini
+            padGroup.userData = { isPad: true, type: 'main', originalY: 3.5, ring: ring };
 
-            base.add(padGroup); pads.push(padGroup);
+            base.add(padGroup); 
+            pads.push(padGroup);
+            mainPads.push(padGroup); // Masuk list khusus main pad
             return padGroup;
         }
 
-        const leftPadGroup = createPad(-8.5);
-        const rightPadGroup = createPad(8.5);
+        // Posisi bergeser ke kanan ala Arcade Stick
+        const pad1 = createMainPad(3);
+        const pad2 = createMainPad(14);
 
+        // ==========================================
+        // PANEL LED DASHBOARD (DIPERLEBAR)
+        // ==========================================
         const leds = [];
         const panelGroup = new THREE.Group();
         panelGroup.position.set(0, 3, -8);
         panelGroup.rotation.x = -Math.PI / 8;
         base.add(panelGroup);
 
-        const ledCaseGeo = new THREE.BoxGeometry(26, 4, 2);
+        const ledCaseGeo = new THREE.BoxGeometry(36, 4, 2); // Diperlebar
         const ledCaseMat = new THREE.MeshStandardMaterial({color: 0xe2e8f0, roughness: 0.5});
         const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
         panelGroup.add(ledCase);
         
-        const ledScreenGeo = new THREE.BoxGeometry(25, 3, 2.1);
+        const ledScreenGeo = new THREE.BoxGeometry(35, 3, 2.1); // Diperlebar
         const ledScreenMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.2});
         const ledScreen = new THREE.Mesh(ledScreenGeo, ledScreenMat);
         panelGroup.add(ledScreen);
 
-        const totalLeds = 20; const ledSpacing = 1.1;
+        const totalLeds = 28; // LED ditambah agar penuh
+        const ledSpacing = 1.15;
         const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
 
         for(let i=0; i<totalLeds; i++) {
@@ -532,20 +594,31 @@
             if (intersects.length > 0) {
                 activePad = getPadGroup(intersects[0].object);
                 if (activePad) {
-                    isPressing = true;
-                    activePad.userData.ring.material.color.setHex(0x38bdf8);
+                    if (activePad.userData.type === 'main') {
+                        isPressing = true; // Hanya tombol utama yang men-trigger kalkulasi force
+                        activePad.userData.ring.material.color.setHex(0x38bdf8);
+                    } else {
+                        // Tombol D-Pad & Aux hanya efek visual klik biasa
+                        activePad.userData.ring.material.color.setHex(0x10b981); // Hijau saat ditekan
+                        activePad.position.y = activePad.userData.originalY - 0.4; // Amblas sedikit
+                    }
                     controls.enabled = false; 
                 }
             }
         }
 
         function endPress(event) {
-            isPressing = false;
             if(activePad) { 
-                // Reset warna cincin
-                activePad.userData.ring.material.color.setHex(0x94a3b8); 
-                activePad.userData.ring.scale.set(1, 1, 1);
-                activePad.userData.ring.material.opacity = 0.5;
+                if (activePad.userData.type === 'main') {
+                    isPressing = false;
+                    activePad.userData.ring.material.color.setHex(0x94a3b8); 
+                    activePad.userData.ring.scale.set(1, 1, 1);
+                    activePad.userData.ring.material.opacity = 0.5;
+                } else {
+                    // Kembalikan tombol D-Pad & Aux ke atas
+                    activePad.userData.ring.material.color.setHex(0x94a3b8);
+                    activePad.position.y = activePad.userData.originalY;
+                }
                 activePad = null; 
             }
             controls.enabled = true; 
@@ -577,6 +650,7 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
+            // Fisika Force (hanya jalan jika main pad ditekan)
             if (isPressing) {
                 pressureValue += userStrengthRate * delta; 
                 if (pressureValue > userForceLimit) pressureValue = userForceLimit; 
@@ -677,39 +751,39 @@
                 }
             }
 
-            // --- FITUR BARU: Efek Getaran (Shake Effect) ---
+            // Efek Getaran (Shake Effect)
             if (effortPercentage > 80 && isPressing) {
-                // Semakin tinggi effort, getaran makin kencang
                 const shakeIntensity = ((effortPercentage - 80) / 20) * 0.4; 
                 deviceGroup.position.x = baseOriginalPos.x + (Math.random() - 0.5) * shakeIntensity;
                 deviceGroup.position.z = baseOriginalPos.z + (Math.random() - 0.5) * shakeIntensity;
             } else {
-                // Kembali tenang
                 deviceGroup.position.x = baseOriginalPos.x;
                 deviceGroup.position.z = baseOriginalPos.z;
             }
 
-            // Animasi 3D Pad dan Aura Cincin Dinamis
-            if (activePad) {
-                // Pad amblas
-                activePad.position.y = activePad.userData.originalY - (effortPercentage / 100) * 1.2;
-                
-                // Aura Cincin Meluas dan Menyala
-                const scaleAura = 1 + (effortPercentage / 100) * 0.3; // Membesar max 30%
-                activePad.userData.ring.scale.set(scaleAura, scaleAura, scaleAura);
-                activePad.userData.ring.material.opacity = 0.5 + (effortPercentage / 100) * 0.5; // Makin terang
-                
-                if (effortPercentage > 80) {
-                    activePad.userData.ring.material.color.setHex(0xef4444); // Merah kalau overload
-                } else if (effortPercentage > 50) {
-                    activePad.userData.ring.material.color.setHex(0xf59e0b); // Oranye kalau sedang
+            // Animasi 3D Khusus Main Pads dan Aura Cincin Dinamis
+            mainPads.forEach(pad => {
+                if (activePad === pad) {
+                    // Pad amblas sesuai persentase
+                    pad.position.y = pad.userData.originalY - (effortPercentage / 100) * 1.2;
+                    
+                    // Aura Cincin Meluas dan Menyala
+                    const scaleAura = 1 + (effortPercentage / 100) * 0.3; 
+                    pad.userData.ring.scale.set(scaleAura, scaleAura, scaleAura);
+                    pad.userData.ring.material.opacity = 0.5 + (effortPercentage / 100) * 0.5; 
+                    
+                    if (effortPercentage > 80) {
+                        pad.userData.ring.material.color.setHex(0xef4444); 
+                    } else if (effortPercentage > 50) {
+                        pad.userData.ring.material.color.setHex(0xf59e0b); 
+                    } else {
+                        pad.userData.ring.material.color.setHex(0x38bdf8); 
+                    }
                 } else {
-                    activePad.userData.ring.material.color.setHex(0x38bdf8); // Biru awal
+                    // Transisi halus kembali ke atas jika tidak ditekan
+                    pad.position.y += (pad.userData.originalY - pad.position.y) * 0.3;
                 }
-            } else {
-                leftPadGroup.position.y += (leftPadGroup.userData.originalY - leftPadGroup.position.y) * 0.3;
-                rightPadGroup.position.y += (rightPadGroup.userData.originalY - rightPadGroup.position.y) * 0.3;
-            }
+            });
 
             const activeLedCount = Math.floor((effortPercentage / 100) * totalLeds);
             for(let i=0; i<totalLeds; i++) {
