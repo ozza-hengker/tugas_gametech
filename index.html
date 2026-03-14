@@ -329,7 +329,7 @@
             holdTimer = 0; pressureValue = 0; maxCalibrationForce = 1; gameActive = false;
             modalCalib.style.display = 'block';
             uiPlay.style.display = 'none'; minigamePanel.style.display = 'none';
-            progressBar.style.width = '0%'; progressText.innerText = `TAHAN PAD TENGAH: 0.0s / 3.0s`;
+            progressBar.style.width = '0%'; progressText.innerText = `TAHAN KINETIC PAD: 0.0s / 3.0s`;
             calibStatus.innerText = 'MENUNGGU INPUT...'; calibStatus.style.color = '#ef4444';
         }
 
@@ -345,9 +345,8 @@
         scene.background = new THREE.Color(0xeef2f5);
         scene.fog = new THREE.FogExp2(0xeef2f5, 0.012);
 
-        // Kamera dimundurkan agar casing lebar terlihat proporsional
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 38, 48);
+        camera.position.set(0, 42, 45);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -359,7 +358,6 @@
         controls.enableDamping = true; controls.dampingFactor = 0.05;
         controls.maxPolarAngle = Math.PI / 2 - 0.05; 
         controls.minDistance = 20; controls.maxDistance = 100;
-        // Batasi geser agar selalu fokus di tengah
         controls.enablePan = false; 
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -372,7 +370,7 @@
         scene.add(dirLight);
         
         const spotLight = new THREE.SpotLight(0x0056a0, 0.5);
-        spotLight.position.set(0, -10, 20); // Cahaya dari bawah layar
+        spotLight.position.set(0, -10, 20); 
         scene.add(spotLight);
 
         const floorGeo = new THREE.PlaneGeometry(200, 200);
@@ -382,46 +380,44 @@
         scene.add(floor);
 
         const deviceGroup = new THREE.Group();
-        // Naikkan sedikit keseluruhan device agar bayangan lebih jelas
-        deviceGroup.position.y = 1.5;
+        deviceGroup.position.y = 1.0; // Mengangkat keseluruhan device dari lantai
         scene.add(deviceGroup);
 
         const pads = [];
         const mainPads = [];
-        const analogSticks = []; // Array khusus untuk menyimpan referensi stick analog
+        const analogSticks = []; 
 
         // ==========================================
-        // 1. MEMBANGUN BODI GAMEPAD (SKALA DIPERBESAR)
+        // 1. MEMBANGUN BODI GAMEPAD (BENTUK PRESISI)
         // ==========================================
         const shape = new THREE.Shape();
         shape.moveTo(-10, 8);
-        shape.lineTo(10, 8); 
-        shape.quadraticCurveTo(20, 8, 20, 0); 
-        shape.quadraticCurveTo(22, -10, 16, -14); 
-        shape.quadraticCurveTo(13, -19, 7, -10); 
-        shape.quadraticCurveTo(5, -3, 0, -3); 
-        shape.quadraticCurveTo(-5, -3, -7, -10); 
-        shape.quadraticCurveTo(-13, -19, -16, -14); 
-        shape.quadraticCurveTo(-22, -10, -20, 0); 
-        shape.quadraticCurveTo(-20, 8, -10, 8); 
+        shape.lineTo(10, 8); // Garis atas
+        shape.quadraticCurveTo(20, 8, 20, 0); // Bahu Kanan
+        shape.quadraticCurveTo(22, -10, 15, -15); // Grip Kanan (Outer)
+        shape.quadraticCurveTo(12, -20, 7, -10); // Grip Kanan (Tip)
+        shape.quadraticCurveTo(5, -3, 0, -3); // Lengkungan Dalam Tengah
+        shape.quadraticCurveTo(-5, -3, -7, -10); // Lengkungan Dalam Kiri
+        shape.quadraticCurveTo(-12, -20, -15, -15); // Grip Kiri (Tip)
+        shape.quadraticCurveTo(-22, -10, -20, 0); // Grip Kiri (Outer)
+        shape.quadraticCurveTo(-20, 8, -10, 8); // Bahu Kiri
 
-        const extrudeSettingsTop = {
-            depth: 1.5, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.8, bevelThickness: 0.8
-        };
+        const extrudeSettingsTop = { depth: 1.5, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.8, bevelThickness: 0.8 };
         const bodyGeoTop = new THREE.ExtrudeGeometry(shape, extrudeSettingsTop);
         bodyGeoTop.translate(0, 0, -0.75); 
+        
         const shellMatTop = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.2, metalness: 0.1 });
         const shellTop = new THREE.Mesh(bodyGeoTop, shellMatTop);
         shellTop.rotation.x = -Math.PI / 2;
-        shellTop.position.y = 1; 
+        
+        shellTop.position.y = 1.0; 
         shellTop.castShadow = true; shellTop.receiveShadow = true;
         deviceGroup.add(shellTop);
 
-        const extrudeSettingsBot = {
-            depth: 1.2, bevelEnabled: true, bevelSegments: 8, steps: 1, bevelSize: 0.6, bevelThickness: 0.6
-        };
+        const extrudeSettingsBot = { depth: 1.2, bevelEnabled: true, bevelSegments: 8, steps: 1, bevelSize: 0.6, bevelThickness: 0.6 };
         const bodyGeoBot = new THREE.ExtrudeGeometry(shape, extrudeSettingsBot);
         bodyGeoBot.translate(0, 0, -0.6);
+        
         const shellMatBot = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7, metalness: 0.2 });
         const shellBot = new THREE.Mesh(bodyGeoBot, shellMatBot);
         shellBot.rotation.x = -Math.PI / 2;
@@ -430,49 +426,69 @@
         shellBot.castShadow = true; shellBot.receiveShadow = true;
         deviceGroup.add(shellBot);
 
+        // Menetapkan Base Y untuk semua tombol agar duduk tepat di atas permukaan gamepad
+        const SURFACE_Y = 1.8; 
+
         // ==========================================
-        // 2. KINETIC FORCE PADS (Tengah Atas) - Posisi Dinaikkan
+        // KABEL USB - Ditambahkan ke Device agar menempel
+        // ==========================================
+        const cableCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0.5, -8),      // Pangkal nempel pas di punggung belakang gamepad
+            new THREE.Vector3(0, -6, -15),    
+            new THREE.Vector3(8, -6, -25),    
+            new THREE.Vector3(20, -6, -35)    
+        ]);
+        const cableGeo = new THREE.TubeGeometry(cableCurve, 30, 0.6, 12, false);
+        const cableMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9, wireframe: false }); 
+        const cable = new THREE.Mesh(cableGeo, cableMat);
+        cable.castShadow = true;
+        // PERBAIKAN: Masukkan ke deviceGroup agar posisinya relatif terhadap bodi gamepad
+        deviceGroup.add(cable);
+
+        // ==========================================
+        // 2. KINETIC FORCE PADS (TENGAH)
         // ==========================================
         const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.2 });
         const cylinderGeo = new THREE.CylinderGeometry(3.6, 3.8, 1.5, 32); 
         const domeGeo = new THREE.SphereGeometry(3.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
 
-        function createMainPad(xPosition) {
+        function createMainPad(xPosition, zPosition) {
             const padGroup = new THREE.Group();
             
             const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
+            cylinder.position.y = 0.75; 
             cylinder.castShadow = true; cylinder.receiveShadow = true;
+            
             const dome = new THREE.Mesh(domeGeo, padMaterial);
-            dome.position.y = 0.75; dome.scale.y = 0.2; dome.castShadow = true;
+            dome.position.y = 1.5; dome.scale.y = 0.2; dome.castShadow = true;
 
             const ringGeo = new THREE.TorusGeometry(4.0, 0.2, 32, 32);
             const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = -0.6; ring.rotation.x = Math.PI/2;
+            ring.position.y = 0.1; ring.rotation.x = Math.PI/2;
 
             padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
             
-            // Y Disesuaikan (Lebih tinggi) agar tidak tenggelam di casing besar
-            padGroup.position.set(xPosition, 3.0, -2); 
+            padGroup.position.set(xPosition, SURFACE_Y, zPosition); 
             
-            padGroup.userData = { isPad: true, type: 'main', originalY: 3.0, ring: ring };
+            padGroup.userData = { isPad: true, type: 'main', originalY: SURFACE_Y, ring: ring };
             deviceGroup.add(padGroup); 
             
             const hitboxGeo = new THREE.CylinderGeometry(4.2, 4.2, 3, 16);
             const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
             const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+            hitbox.position.y = 1.5;
             padGroup.add(hitbox);
 
             pads.push(hitbox);
             mainPads.push(padGroup);
-            return padGroup;
         }
 
-        const pad1 = createMainPad(-5.5); 
-        const pad2 = createMainPad(5.5);  
+        createMainPad(-5, -2); 
+        createMainPad(5, -2);  
 
         // ==========================================
-        // 3. ANALOG JOYSTICK - Posisi Dinaikkan
+        // 3. ANALOG JOYSTICK FLEXIBLE
         // ==========================================
         function createAnalogStick(x, z) {
             const analogGroup = new THREE.Group();
@@ -480,15 +496,12 @@
             const socketGeo = new THREE.SphereGeometry(2.2, 32, 16, 0, Math.PI*2, 0, Math.PI/2.2);
             const socketMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
             const socket = new THREE.Mesh(socketGeo, socketMat);
-            // Socket sedikit dimunculkan
-            socket.position.y = 0.5;
+            socket.position.y = 0; 
             
             const stickParts = new THREE.Group();
-            // Pusat rotasi tiang stick diatur ke bawah (pangkalnya) agar miringnya natural
-            stickParts.position.y = 0.5; 
+            stickParts.position.y = 0; 
 
             const shaftGeo = new THREE.CylinderGeometry(0.6, 0.6, 2, 16);
-            // Pindahkan geometry ke atas sehingga pusatnya ada di dasar tiang
             shaftGeo.translate(0, 1, 0); 
             const shaftMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3, metalness: 0.6 });
             const shaft = new THREE.Mesh(shaftGeo, shaftMat);
@@ -506,94 +519,86 @@
             stickParts.add(shaft); stickParts.add(cap); stickParts.add(rim);
             analogGroup.add(socket); analogGroup.add(stickParts);
             
-            // Base posisi Y lebih tinggi agar menonjol dari casing
-            analogGroup.position.set(x, 2.2, z); 
+            analogGroup.position.set(x, SURFACE_Y, z); 
             
-            const hitboxGeo = new THREE.CylinderGeometry(4.0, 4.0, 5, 16);
+            const hitboxGeo = new THREE.CylinderGeometry(3.5, 3.5, 4, 16);
             const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
             const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
             hitbox.position.y = 2;
             analogGroup.add(hitbox);
 
-            // Simpan referensi dunia (world position) untuk perhitungan flex kursor nanti
             analogGroup.userData = { isPad: true, type: 'analog', stick: stickParts, baseX: x, baseZ: z };
             deviceGroup.add(analogGroup);
             pads.push(hitbox);
             analogSticks.push(analogGroup);
         }
         
-        createAnalogStick(-10, 6);
-        createAnalogStick(10, 6);
+        createAnalogStick(-11, 10);
+        createAnalogStick(11, 10);
 
         // ==========================================
-        // 4. D-PAD - Posisi Dinaikkan
+        // 4. D-PAD
         // ==========================================
         const dpadGroup = new THREE.Group();
         const dpadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
         const dpadVGeo = new THREE.BoxGeometry(1.6, 0.8, 5); 
         const dpadHGeo = new THREE.BoxGeometry(5, 0.8, 1.6); 
-        const dpadV = new THREE.Mesh(dpadVGeo, dpadMat); dpadV.castShadow = true;
-        const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true;
+        const dpadV = new THREE.Mesh(dpadVGeo, dpadMat); dpadV.castShadow = true; dpadV.position.y = 0.4;
+        const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true; dpadH.position.y = 0.4;
         dpadGroup.add(dpadV); dpadGroup.add(dpadH);
         
-        // Y Position dinaikkan menjadi 3.2
-        dpadGroup.position.set(-15, 3.2, -2.5);
-        dpadGroup.rotation.x = -0.05;
-        dpadGroup.rotation.z = 0.05;
+        dpadGroup.position.set(-14, SURFACE_Y, 0);
 
-        dpadGroup.userData = { isPad: true, type: 'dpad', originalY: 3.2, mesh: dpadGroup };
+        dpadGroup.userData = { isPad: true, type: 'dpad', originalY: SURFACE_Y, mesh: dpadGroup };
         deviceGroup.add(dpadGroup);
         
         const dpadHitbox = new THREE.Mesh(new THREE.CylinderGeometry(3,3,2,16), new THREE.MeshBasicMaterial({transparent:true, opacity:0}));
+        dpadHitbox.position.y = 0.5;
         dpadGroup.add(dpadHitbox);
         pads.push(dpadHitbox);
 
         // ==========================================
-        // 5. TOMBOL AKSI PLAYSTATION - Posisi Dinaikkan
+        // 5. TOMBOL AKSI PLAYSTATION
         // ==========================================
         function createActionButton(x, z, colorHex) {
             const btnGroup = new THREE.Group();
             
-            const holeGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.4, 32);
+            const holeGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.2, 32);
             const hole = new THREE.Mesh(holeGeo, shellMatBot);
-            hole.position.y = 0; // Lebih menonjol dari dasar casing
+            hole.position.y = 0.1; 
             
-            const btnGeo = new THREE.CylinderGeometry(0.9, 0.9, 1.0, 32);
+            const btnGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.8, 32);
             const btnMat = new THREE.MeshStandardMaterial({ 
                 color: colorHex, roughness: 0.1, metalness: 0.4, 
                 transparent: true, opacity: 0.9 
             });
             const btn = new THREE.Mesh(btnGeo, btnMat);
-            // Posisi tombol dinaikkan
-            btn.position.y = 0.7; btn.castShadow = true;
+            btn.position.y = 0.5; btn.castShadow = true;
 
             btnGroup.add(hole); btnGroup.add(btn);
             
-            // Group base Y dinaikkan ke 2.8
-            btnGroup.position.set(x, 2.8, z);
-            btnGroup.rotation.x = -0.05;
-            btnGroup.rotation.z = -0.05;
+            btnGroup.position.set(x, SURFACE_Y, z);
             
-            btnGroup.userData = { isPad: true, type: 'action', originalY: 0.7, mesh: btn };
+            btnGroup.userData = { isPad: true, type: 'action', originalY: 0.5, mesh: btn };
             deviceGroup.add(btnGroup); pads.push(btn);
         }
         
-        createActionButton(15, -4.5, 0x10b981);   
-        createActionButton(15, -0.5, 0x38bdf8);   
-        createActionButton(13, -2.5, 0xd946ef);   
-        createActionButton(17, -2.5, 0xef4444);   
+        createActionButton(15, -2.5, 0x10b981);   // Atas (Hijau)
+        createActionButton(15, 2.5, 0x38bdf8);    // Bawah (Biru)
+        createActionButton(12.5, 0, 0xd946ef);    // Kiri (Pink)
+        createActionButton(17.5, 0, 0xef4444);    // Kanan (Merah)
 
         // ==========================================
-        // 6. LED LIGHTBAR - Diatur Pas di Atas Casing
+        // 6. LED LIGHTBAR - Menempel Pas di Atas Casing
         // ==========================================
         const leds = [];
         const panelGroup = new THREE.Group();
-        // Posisi Y disesuaikan agar nempel sempurna di bibir atas
-        panelGroup.position.set(0, 3.2, -10.5);
-        panelGroup.rotation.x = -Math.PI / 4; // Dimiringkan agar lebih menghadap kamera
+        // PERBAIKAN: Y diturunkan ke 1.5 dan Z ditarik ke dalam (-7.5) agar menancap erat ke bodi gamepad.
+        panelGroup.position.set(0, 1.5, -7.5);
+        panelGroup.rotation.x = -Math.PI / 6; 
         deviceGroup.add(panelGroup);
 
-        const ledCaseGeo = new THREE.BoxGeometry(20, 2, 0.8);
+        const ledCaseGeo = new THREE.BoxGeometry(20, 1.4, 0.8); // Dibuat lebih tipis agar proposional
         const ledCaseMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.5});
         const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
         panelGroup.add(ledCase);
@@ -602,10 +607,10 @@
         const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
 
         for(let i=0; i<totalLeds; i++) {
-            const ledGeo = new THREE.BoxGeometry(0.7, 1.2, 0.2);
+            const ledGeo = new THREE.BoxGeometry(0.7, 0.9, 0.2); // Tinggi LED diturunkan
             const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
             const led = new THREE.Mesh(ledGeo, ledMat);
-            led.position.set(startX + (i * ledSpacing), 0, 0.4);
+            led.position.set(startX + (i * ledSpacing), 0, 0.4); // Maju agar nampak
             
             let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
             led.userData = { defaultColor: 0x334155, activeColor: colorHex };
@@ -613,12 +618,11 @@
         }
 
         // ==========================================
-        // LOGIKA INTERAKSI & RAYCASTER
+        // LOGIKA INTERAKSI FLEXIBLE & RAYCASTER
         // ==========================================
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         
-        // Simpan titik klik 3D dunia nyata untuk hitung sudut fleksibel analog
         let pointerIntersectPoint = new THREE.Vector3(); 
         
         let isPressing = false; let activePad = null; let pressureValue = 0; 
@@ -631,7 +635,6 @@
             } return null;
         }
 
-        // Fungsi untuk mengupdate posisi mouse dari event mouse/touch
         function updateMousePos(event) {
             let clientX, clientY;
             if (event.changedTouches && event.changedTouches.length > 0) {
@@ -653,18 +656,18 @@
 
             if (intersects.length > 0) {
                 activePad = getPadGroup(intersects[0].object);
-                pointerIntersectPoint.copy(intersects[0].point); // Simpan titik kena raycaster
+                pointerIntersectPoint.copy(intersects[0].point); 
 
                 if (activePad) {
                     if (activePad.userData.type === 'main') {
                         isPressing = true; 
                         activePad.userData.ring.material.color.setHex(0x38bdf8);
                     } else if (activePad.userData.type === 'action') {
-                        activePad.userData.mesh.position.y = activePad.userData.originalY - 0.4;
+                        activePad.userData.mesh.position.y = activePad.userData.originalY - 0.3;
                     } else if (activePad.userData.type === 'dpad') {
-                        activePad.position.y = activePad.userData.originalY - 0.3;
+                        activePad.position.y = activePad.userData.originalY - 0.2;
                     } else if (activePad.userData.type === 'analog') {
-                        // Animasi flekbibel akan diurus di fungsi animate berdasarkan pergerakan mouse
+                        // Tidak ada animasi statis. Ini akan ditangani oleh sistem Flex di animate()
                     }
                     controls.enabled = false; 
                 }
@@ -677,10 +680,15 @@
             updateMousePos(event);
             raycaster.setFromCamera(mouse, camera);
             
-            // Jika yang sedang ditekan adalah Analog, kita update titik interaksinya (Plane imaginer di tinggi gamepad)
+            // MENGHITUNG ARAH FLEX JOYSTICK BERDASARKAN GERAKAN KURSOR
             if (activePad.userData.type === 'analog') {
-                const planeZ = new THREE.Plane(new THREE.Vector3(0, 1, 0), -4); // Bidang virtual pada ketinggian Y=4
-                raycaster.ray.intersectPlane(planeZ, pointerIntersectPoint);
+                // Buat bidang khayal (Plane) sejajar dengan tinggi permukaan gamepad (Y=2.5)
+                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -2.5); 
+                let targetPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, targetPoint);
+                if (targetPoint) {
+                    pointerIntersectPoint.copy(targetPoint);
+                }
             }
         }
 
@@ -696,7 +704,6 @@
                 } else if (activePad.userData.type === 'dpad') {
                     activePad.position.y = activePad.userData.originalY;
                 }
-                // Analog akan kembali tegak secara bertahap di fungsi animate saat activePad !== dirinya
                 activePad = null; 
             }
             controls.enabled = true; 
@@ -704,7 +711,7 @@
 
         const canvasEl = renderer.domElement;
         canvasEl.addEventListener('pointerdown', startPress);
-        canvasEl.addEventListener('pointermove', movePress); // Tambah pointermove untuk deteksi geseran
+        canvasEl.addEventListener('pointermove', movePress); 
         window.addEventListener('pointerup', endPress);
         window.addEventListener('pointercancel', endPress);
         
@@ -857,32 +864,28 @@
                 }
             });
 
-            // Animasi Rotasi Joystick Flexibel
+            // ANIMASI ROTASI JOYSTICK FLEXIBLE SEPERTI ASLI
             analogSticks.forEach(analog => {
                 if (activePad === analog && pointerIntersectPoint) {
-                    // Hitung vektor arah dari pusat analog ke titik kursor
-                    // Perhatikan bahwa koordinat lokal berbeda, kita gunakan pendekatan simulasi
                     
-                    // Kita asumsikan pusat objek di dunia nyata mendekati baseX dan baseZ yang kita simpan
+                    // Kalkulasi jarak kursor dari titik pusat joystick
                     const dx = pointerIntersectPoint.x - analog.userData.baseX;
                     const dz = pointerIntersectPoint.z - analog.userData.baseZ;
                     
-                    // Hitung sudut rotasi maksimum (membatasi seberapa miring analog bisa ditekuk)
-                    const maxTilt = 0.45; // Radian
-                    
-                    // Normalisasi jarak agar rotasi halus
                     const dist = Math.sqrt(dx*dx + dz*dz);
+                    
+                    // Batas maksimal kemiringan joystick (dalam radian)
+                    const maxTilt = 0.5; 
                     const tiltAmount = Math.min(dist * 0.15, maxTilt); 
                     
-                    // Terapkan rotasi. Sumbu X dipengaruhi oleh pergerakan Z, dan sebaliknya
-                    // Tanda minus disesuaikan dengan orientasi kamera
+                    // Miringkan tiang joystick ke arah tarikan mouse
                     analog.userData.stick.rotation.x = (dz / (dist || 1)) * tiltAmount;
                     analog.userData.stick.rotation.z = -(dx / (dist || 1)) * tiltAmount;
                     
                 } else {
-                    // Jika tidak ditekan, pelan-pelan kembali ke tengah (tegak)
-                    analog.userData.stick.rotation.x += (0 - analog.userData.stick.rotation.x) * 0.2;
-                    analog.userData.stick.rotation.z += (0 - analog.userData.stick.rotation.z) * 0.2;
+                    // Joystick kembali memantul ke tengah jika dilepas
+                    analog.userData.stick.rotation.x += (0 - analog.userData.stick.rotation.x) * 0.3;
+                    analog.userData.stick.rotation.z += (0 - analog.userData.stick.rotation.z) * 0.3;
                 }
             });
 
