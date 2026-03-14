@@ -80,187 +80,187 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex: 1;
         }
         .gear-btn:hover { background: #1e293b; border-color: #38bdf8; color: #e0f2fe; transform: translateY(-2px); }
-        .gear-btn.active {
-            background: #0284c7; color: #fff; border-color: #38bdf8;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.5);
-        }
+        // KETINGGIAN PERMUKAAN (Y-Axis) YANG PRESISI AGAR TOMBOL TIDAK TENGGELAM
+        const SURFACE_Y = 2.6; 
 
-        #pressure-info {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            font-family: 'Montserrat', sans-serif; text-align: center;
-            pointer-events: none; transition: all 0.2s;
-            border-width: 2px; min-width: 320px;
-        }
-        .output-text { font-size: 42px; color: #38bdf8; margin-top: 0px; font-weight: 900; line-height: 1; text-shadow: 0 0 10px rgba(56,189,248,0.3);}
-        #text-force { font-size: 14px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px;}
-        #text-kg { font-size: 18px; color: #f59e0b; font-weight: 900; margin-bottom: 8px; text-shadow: 0 0 8px rgba(245,158,11,0.3);} 
+        // ==========================================
+        // 2. KINETIC FORCE PADS (TENGAH ATAS)
+        // ==========================================
+        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.2 });
+        const cylinderGeo = new THREE.CylinderGeometry(4.0, 4.2, 1.2, 32); 
+        const domeGeo = new THREE.SphereGeometry(4.0, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
 
-        #stamina-container {
-            width: 100%; height: 10px; background: #1e293b; border-radius: 5px;
-            margin: 12px auto 6px auto; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-        }
-        #stamina-bar {
-            width: 100%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); transition: width 0.1s;
-        }
-        #stamina-label {
-            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #cbd5e1;
-        }
-
-        #calibration-modal {
-            top: 25%; left: 50%; transform: translate(-50%, -50%);
-            width: 500px; text-align: center; z-index: 100;
-            pointer-events: none; 
-        }
-        #calibration-modal h2 { font-family: 'Montserrat', sans-serif; color: #f59e0b; font-size: 28px; margin-bottom: 10px; font-weight: 900; text-shadow: 0 0 15px rgba(245,158,11,0.4);}
-        .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #cbd5e1; }
-        
-        #progress-bg {
-            width: 100%; height: 36px; background: #1e293b;
-            border-radius: 18px; border: 1px solid #334155;
-            overflow: hidden; margin-bottom: 15px; position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-        }
-        #progress-bar {
-            width: 0%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8);
-            transition: width 0.1s; box-shadow: 0 0 10px rgba(56,189,248,0.5);
-        }
-        #progress-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Montserrat', sans-serif; font-weight: 800; color: #fff; font-size: 14px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8); letter-spacing: 1px;
-        }
-
-        .btn-start {
-            background: linear-gradient(135deg, #ea580c, #f97316); color: #fff; font-size: 16px;
-            padding: 12px 24px; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif;
-            font-weight: 800; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4); pointer-events: auto;
-        }
-        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(234, 88, 12, 0.6); }
-
-        #calib-status { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; color: #ef4444; height: 30px; margin-top: 10px;}
-
-        .profile-panel { margin-bottom: 20px; border: 1px dashed #334155; padding: 15px; border-radius: 12px; background: rgba(15, 23, 42, 0.5); }
-        .profile-btn {
-            background: #0f172a; color: #94a3b8; border: 1px solid #334155;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Nunito', sans-serif;
-            font-weight: bold; margin: 0 5px; transition: 0.2s; font-size: 15px;
-        }
-        .profile-btn:hover { border-color: #38bdf8; color: #f8fafc; }
-        .profile-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
-
-        #minigame-panel {
-            position: absolute; top: 20px; right: 20px; width: 320px;
-            display: none; 
-        }
-        .mg-title { font-family: 'Montserrat', sans-serif; color: #ef4444; font-size: 18px; font-weight: 900; text-align: center; margin-bottom: 8px;}
-        .mg-desc { font-size: 14px; text-align: center; color: #cbd5e1; margin-bottom: 12px; line-height: 1.4; font-weight: 600;}
-        .mg-bar-container {
-            height: 24px; background: #1e293b; border-radius: 12px;
-            border: 1px solid #334155; position: relative; overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-        }
-        #mg-bar-fill {
-            height: 100%; width: 30%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
-            transition: width 0.1s;
-        }
-        #mg-status {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 900; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-        }
-        #mg-overlay-msg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(16, 185, 129, 0.95); color: #fff; font-family: 'Montserrat', sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
-        .mg-overlay-title { font-weight: 900; font-size: 26px; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
-        
-        .btn-retry {
-            background: #fff; color: #10b981; border: none; padding: 8px 20px;
-            border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800;
-            font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        .btn-retry:hover { background: #f1f5f9; transform: translateY(-2px); }
-
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-</head>
-<body>
-
-    <div class="bg-pattern"></div>
-
-    <div id="calibration-modal" class="glass-panel">
-        <div class="logo-container">
-            <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0ea5e9/ffffff?text=FILKOM+UB';">
-        </div>
-        <h2>⚠️ FASE KALIBRASI</h2>
-        <p class="calib-instruction">Alat harus memetakan limit fisik Anda. <br><b>Tahan Klik (Hold) pada BANTALAN HITAM BESAR</b> sekuat mungkin sampai indikator penuh!</p>
-        
-        <div class="profile-panel">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: #38bdf8; font-weight: 800; pointer-events: none;">Pilih Profil Fisik Anda:</p>
-            <button id="btn-prof-adult" class="profile-btn active" onclick="setProfile('adult')" style="pointer-events: auto;">Orang Dewasa</button>
-            <button id="btn-prof-child" class="profile-btn" onclick="setProfile('child')" style="pointer-events: auto;">Anak Kecil</button>
-        </div>
-
-        <div id="progress-bg">
-            <div id="progress-bar"></div>
-            <div id="progress-text">TAHAN KINETIC PAD: 0.0s / 3.0s</div>
-        </div>
-        
-        <div id="calib-status">MENUNGGU INPUT...</div>
-    </div>
-
-    <div id="ui-play" style="display: none;">
-        <div id="ui-overlay" class="glass-panel">
-            <div class="logo-container">
-                <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0ea5e9/ffffff?text=FILKOM+UB';">
-            </div>
-            <h1>Universal Gamepad</h1>
-            <p style="color: #10b981; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 800;">● WIRELESS HYBRID SYSTEM ONLINE</p>
-            <br>
-            <p>🛠️ <span class="highlight">Data Kalibrasi:</span></p>
-            <p id="info-max-force">Kekuatan Fisik Maksimal: 0.0 Kg</p>
+        function createMainPad(xPosition, zPosition) {
+            const padGroup = new THREE.Group();
             
-            <div class="gear-panel">
-                <p style="color: #94a3b8; font-weight: 800; pointer-events: none; margin-bottom: 8px;">⚙️ KINETIC MULTIPLIER:</p>
-                <div class="gear-buttons">
-                    <button class="gear-btn active" onclick="setGear(1, 15)" id="btn-gear1">Gear 1<br><small>15 CPS</small></button>
-                    <button class="gear-btn" onclick="setGear(2, 30)" id="btn-gear2">Gear 2<br><small>30 CPS</small></button>
-                    <button class="gear-btn" onclick="setGear(3, 60)" id="btn-gear3">Gear 3<br><small>60 CPS</small></button>
-                </div>
-                <button class="btn-start" style="width: 100%; margin-top: 15px; font-size: 14px; padding: 10px;" onclick="resetToCalibration()">RESET KALIBRASI</button>
-            </div>
-        </div>
+            const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
+            cylinder.position.y = 0.6; 
+            cylinder.castShadow = true; cylinder.receiveShadow = true;
+            
+            const dome = new THREE.Mesh(domeGeo, padMaterial);
+            dome.position.y = 1.2; dome.scale.y = 0.2; dome.castShadow = true;
 
-        <div id="minigame-panel" class="glass-panel">
-            <div class="mg-title">⚠️ PVE EVENT: ESCAPE!</div>
-            <p class="mg-desc">Gunakan Pad Hitam di tengah! Atur napas dan stamina ototmu untuk lari!</p>
-            <div class="mg-bar-container">
-                <div id="mg-bar-fill"></div>
-                <div id="mg-status">JARAK AMAN: 30%</div>
-            </div>
-            <div id="mg-overlay-msg">
-                <div class="mg-overlay-title">MISSION CLEAR!</div>
-                <button class="btn-retry" onclick="retryMission()" style="pointer-events: auto;">RETRY MISSION</button>
-            </div>
-        </div>
+            const ringGeo = new THREE.TorusGeometry(4.4, 0.15, 32, 32);
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.0 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.y = 0.1; ring.rotation.x = Math.PI/2;
 
-        <div id="pressure-info" class="glass-panel">
-            <div id="text-force">USAHA FISIK (EFFORT)</div>
-            <div id="text-kg">BEBAN TEKANAN AKTIF: 0.0 Kg</div> 
-            <div id="text-output" class="output-text">0 CPS</div>
-            <div id="stamina-container">
-                <div id="stamina-bar"></div>
-            </div>
-            <div id="stamina-label">STAMINA OTOT: 100%</div>
-        </div>
-    </div>
+            padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
+            padGroup.position.set(xPosition, SURFACE_Y, zPosition); 
+            
+            padGroup.userData = { isPad: true, type: 'main', originalY: SURFACE_Y, ring: ring, defaultY: SURFACE_Y };
+            deviceGroup.add(padGroup); 
+            
+            const hitboxGeo = new THREE.CylinderGeometry(4.6, 4.6, 3, 16);
+            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+            const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+            hitbox.position.y = 1.0;
+            padGroup.add(hitbox);
 
-    <div id="canvas-container"></div>
+            pads.push(hitbox);
+            mainPads.push(padGroup);
+        }
 
-    <script>
+        // Posisi strategis di bawah touchpad
+        createMainPad(-4.8, -1.2); 
+        createMainPad(4.8, -1.2);  
+
+        // ==========================================
+        // 3. ANALOG JOYSTICK FLEXIBLE (Di Bawah Hitam)
+        // ==========================================
+        function createAnalogStick(x, z) {
+            const analogGroup = new THREE.Group();
+            
+            const socketGeo = new THREE.SphereGeometry(2.6, 32, 16, 0, Math.PI*2, 0, Math.PI/2.2);
+            const socketMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+            const socket = new THREE.Mesh(socketGeo, socketMat);
+            socket.position.y = -0.2; // Rata dengan casing
+            
+            const rgbRingGeo = new THREE.TorusGeometry(2.9, 0.1, 16, 32);
+            const rgbRingMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.5 });
+            const rgbRing = new THREE.Mesh(rgbRingGeo, rgbRingMat);
+            rgbRing.position.y = 0.05; rgbRing.rotation.x = Math.PI/2;
+            analogGroup.add(rgbRing);
+            rgbMaterials.push(rgbRingMat);
+
+            const stickParts = new THREE.Group();
+            stickParts.position.y = -0.2; 
+
+            const shaftGeo = new THREE.CylinderGeometry(0.65, 0.65, 2.2, 16);
+            shaftGeo.translate(0, 1.1, 0); 
+            const shaftMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3, metalness: 0.6 });
+            const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+            shaft.castShadow = true;
+            
+            const capGeo = new THREE.CylinderGeometry(2.4, 2.6, 0.4, 32);
+            const capMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 }); 
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = 2.2; cap.castShadow = true;
+            
+            const rimGeo = new THREE.TorusGeometry(2.4, 0.2, 16, 32);
+            const rim = new THREE.Mesh(rimGeo, capMat);
+            rim.position.y = 2.4; rim.rotation.x = Math.PI/2;
+            
+            stickParts.add(shaft); stickParts.add(cap); stickParts.add(rim);
+            analogGroup.add(socket); analogGroup.add(stickParts);
+            
+            analogGroup.position.set(x, SURFACE_Y, z); 
+            
+            const hitboxGeo = new THREE.CylinderGeometry(3.5, 3.5, 4, 16);
+            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+            const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+            hitbox.position.y = 1;
+            analogGroup.add(hitbox);
+
+            analogGroup.userData = { isPad: true, type: 'analog', stick: stickParts, baseX: x, baseZ: z };
+            deviceGroup.add(analogGroup);
+            pads.push(hitbox);
+            analogSticks.push(analogGroup);
+        }
+        
+        // Simetris di gagang bawah (PS layout)
+        createAnalogStick(-8.5, 6.5);
+        createAnalogStick(8.5, 6.5);
+
+        // ==========================================
+        // 4. D-PAD + RGB
+        // ==========================================
+        const dpadGroup = new THREE.Group();
+        const dpadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+        const dpadVGeo = new THREE.BoxGeometry(1.6, 0.6, 5.2); 
+        const dpadHGeo = new THREE.BoxGeometry(5.2, 0.6, 1.6); 
+        const dpadV = new THREE.Mesh(dpadVGeo, dpadMat); dpadV.castShadow = true; dpadV.position.y = 0.3;
+        const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true; dpadH.position.y = 0.3;
+        dpadGroup.add(dpadV); dpadGroup.add(dpadH);
+        
+        const dpadRgbGeo = new THREE.TorusGeometry(3.3, 0.1, 16, 32);
+        const dpadRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.5 });
+        const dpadRgb = new THREE.Mesh(dpadRgbGeo, dpadRgbMat);
+        dpadRgb.position.y = 0.05; dpadRgb.rotation.x = Math.PI/2;
+        dpadGroup.add(dpadRgb);
+        rgbMaterials.push(dpadRgbMat);
+
+        dpadGroup.position.set(-13, SURFACE_Y, -0.5);
+        dpadGroup.rotation.x = -0.05;
+        dpadGroup.rotation.z = 0.05;
+
+        dpadGroup.userData = { isPad: true, type: 'dpad', originalY: SURFACE_Y, mesh: dpadGroup };
+        deviceGroup.add(dpadGroup);
+        
+        const dpadHitbox = new THREE.Mesh(new THREE.CylinderGeometry(3.5,3.5,2,16), new THREE.MeshBasicMaterial({transparent:true, opacity:0}));
+        dpadHitbox.position.y = 0.3;
+        dpadGroup.add(dpadHitbox);
+        pads.push(dpadHitbox);
+
+        // ==========================================
+        // 5. TOMBOL AKSI PLAYSTATION
+        // ==========================================
+        function createActionButton(x, z, colorHex) {
+            const btnGroup = new THREE.Group();
+            
+            const holeGeo = new THREE.CylinderGeometry(1.3, 1.3, 0.2, 32);
+            const hole = new THREE.Mesh(holeGeo, matWhite);
+            hole.position.y = 0.1; 
+
+            // Cincin RGB Dalam
+            const btnRgbGeo = new THREE.TorusGeometry(1.45, 0.05, 16, 32);
+            const btnRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 2.0 });
+            const btnRgb = new THREE.Mesh(btnRgbGeo, btnRgbMat);
+            btnRgb.position.y = 0.15; btnRgb.rotation.x = Math.PI/2;
+            btnGroup.add(btnRgb);
+            rgbMaterials.push(btnRgbMat);
+            
+            const coreGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.6, 32);
+            const coreMat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 1.0 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.position.y = 0.4;
+            
+            // Cangkang kaca bening menutupi core
+            const btnGeo = new THREE.CylinderGeometry(1.15, 1.15, 0.6, 32);
+            const btnMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0xffffff, roughness: 0.1, transmission: 0.9, thickness: 0.5, transparent: true, opacity: 0.6
+            });
+            const btn = new THREE.Mesh(btnGeo, btnMat);
+            btn.position.y = 0.4; btn.castShadow = true;
+
+            btnGroup.add(hole); btnGroup.add(core); btnGroup.add(btn);
+            
+            btnGroup.position.set(x, SURFACE_Y, z);
+            btnGroup.rotation.x = -0.02;
+            btnGroup.rotation.z = -0.02;
+            
+            btnGroup.userData = { isPad: true, type: 'action', originalY: 0.4, mesh: btn, core: core };
+            deviceGroup.add(btnGroup); pads.push(btn);
+        }
+        
+        // Layout PlayStation
+        createActionButton(13.5, -4.5, 0xf97316);   // Atas (Orange)
+        createActionButton(15.5, -2.5, 0xef4444);   // Kanan (Merah)
+        createActionButton(13.5, -0.5, 0x10b981);   // Bawah (Hijau)
+        createActionButton(11.5, -2.5, 0x38bdf8);   // Kiri (Biru)
+
+        // ==========================================
+        // 6. LED LIGHTBAR (POSISI DI DASHBOARD ATAS)
         // ==========================================
         // STATE MANAJEMEN APLIKASI
         // ==========================================
@@ -340,15 +340,14 @@
         }
 
         // ==========================================
-        // SETUP THREE.JS (TEMA GAMER DARK PREMIUM)
+        // SETUP THREE.JS (TEMA DARK ELEGANT)
         // ==========================================
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050810);
         scene.fog = new THREE.FogExp2(0x050810, 0.012);
 
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // Angle diperbagus agar desain slim terlihat mantap
-        camera.position.set(0, 38, 48);
+        camera.position.set(0, 38, 48); // Angle lebih proper
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -362,18 +361,18 @@
         controls.minDistance = 20; controls.maxDistance = 100;
         controls.enablePan = false; 
 
-        // Pencahayaan disempurnakan agar putihnya bersih dan RGB nya menyala
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Pencahayaan Premium
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(10, 30, 20);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+        dirLight.position.set(10, 40, 20);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.bias = -0.001;
         scene.add(dirLight);
         
-        // Spotlight di bawah agar memantulkan estetika
-        const spotLight = new THREE.SpotLight(0x0ea5e9, 0.6);
+        const spotLight = new THREE.SpotLight(0x0ea5e9, 0.8);
         spotLight.position.set(0, -10, 20); 
         scene.add(spotLight);
 
@@ -390,70 +389,126 @@
         const pads = [];
         const mainPads = [];
         const analogSticks = []; 
-        const rgbMaterials = []; // Array material untuk efek Breathing RGB
 
         // ==========================================
-        // 1. MEMBANGUN BODI GAMEPAD (DIET KETAT & SLEEK)
+        // 1. MEMBANGUN BODI GAMEPAD (DESAIN RAMPING SEPERTI REFERENSI)
         // ==========================================
-        const shape = new THREE.Shape();
-        // Membentuk lekukan presisi layaknya DualSense
-        shape.moveTo(-8, 5);
-        shape.lineTo(8, 5); // Tepi atas
-        shape.quadraticCurveTo(15, 5, 16, -1); // Bahu Kanan
-        shape.quadraticCurveTo(18, -10, 13, -15); // Grip Kanan Luar
-        shape.quadraticCurveTo(9, -20, 5, -10); // Grip Kanan Bawah & Dalam
-        shape.quadraticCurveTo(2, -3, 0, -3); // Lekukan Tengah Bawah
-        shape.quadraticCurveTo(-2, -3, -5, -10); // Lekukan Kiri Dalam
-        shape.quadraticCurveTo(-9, -20, -13, -15); // Grip Kiri Bawah & Luar
-        shape.quadraticCurveTo(-18, -10, -16, -1); // Grip Kiri Luar
-        shape.quadraticCurveTo(-15, 5, -8, 5); // Bahu Kiri
-
-        // Bagian Atas Putih Bersih (Sleek Bevel)
-        const extrudeSettingsTop = { depth: 0.8, bevelEnabled: true, bevelSegments: 8, steps: 2, bevelSize: 0.5, bevelThickness: 0.5 };
-        const bodyGeoTop = new THREE.ExtrudeGeometry(shape, extrudeSettingsTop);
-        bodyGeoTop.translate(0, 0, -0.4); 
+        // Outline Atas (Casing Putih)
+        const shapeWhite = new THREE.Shape();
+        shapeWhite.moveTo(-10, 7);
+        shapeWhite.lineTo(10, 7); // Bahu Atas Lurus
+        shapeWhite.quadraticCurveTo(17, 7, 18, 1); // Bahu Kanan Melengkung
+        shapeWhite.quadraticCurveTo(19, -10, 16, -16); // Gagang Kanan Luar meruncing
+        shapeWhite.quadraticCurveTo(13, -22, 8, -12); // Ujung Gagang Kanan ke dalam
+        shapeWhite.quadraticCurveTo(4, -8, 0, -8); // Lekukan V di Tengah
+        shapeWhite.quadraticCurveTo(-4, -8, -8, -12); // Lekukan V Kiri
+        shapeWhite.quadraticCurveTo(-13, -22, -16, -16); // Ujung Gagang Kiri
+        shapeWhite.quadraticCurveTo(-19, -10, -18, 1); // Gagang Kiri Luar
+        shapeWhite.quadraticCurveTo(-17, 7, -10, 7); // Bahu Kiri
         
-        const shellMatTop = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.1 });
-        const shellTop = new THREE.Mesh(bodyGeoTop, shellMatTop);
-        shellTop.rotation.x = -Math.PI / 2;
-        shellTop.position.y = 0.5; // Ketinggian presisi
-        shellTop.castShadow = true; shellTop.receiveShadow = true;
-        deviceGroup.add(shellTop);
-
-        // Bagian Bawah Hitam (Underbelly)
-        const extrudeSettingsBot = { depth: 0.8, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.4, bevelThickness: 0.4 };
-        const bodyGeoBot = new THREE.ExtrudeGeometry(shape, extrudeSettingsBot);
-        bodyGeoBot.translate(0, 0, -0.4);
+        // Extrude Bodi Putih Atas
+        const extrudeWhite = { depth: 0.6, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.6, bevelThickness: 0.6 };
+        const bodyWhiteGeo = new THREE.ExtrudeGeometry(shapeWhite, extrudeWhite);
+        bodyWhiteGeo.translate(0, 0, -0.3); // Pusatkan ketebalan
         
-        const shellMatBot = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8, metalness: 0.2 });
-        const shellBot = new THREE.Mesh(bodyGeoBot, shellMatBot);
-        shellBot.rotation.x = -Math.PI / 2;
-        shellBot.position.y = -0.4; 
-        shellBot.scale.set(0.97, 0.97, 1);
-        shellBot.castShadow = true; shellBot.receiveShadow = true;
-        deviceGroup.add(shellBot);
+        const matWhite = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.2, metalness: 0.1 });
+        const shellWhite = new THREE.Mesh(bodyWhiteGeo, matWhite);
+        shellWhite.rotation.x = -Math.PI / 2;
+        shellWhite.position.y = 0.5; // Ketinggian Bodi Atas
+        shellWhite.castShadow = true; shellWhite.receiveShadow = true;
+        deviceGroup.add(shellWhite);
 
-        // LAMPU NEON RGB MENGELILINGI SELURUH BODI GAMEPAD (WRAP AROUND)
-        const trimGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.15, bevelEnabled: false });
-        trimGeo.translate(0, 0, -0.075);
-        const trimMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.5 });
-        const trim = new THREE.Mesh(trimGeo, trimMat);
-        trim.rotation.x = -Math.PI / 2;
-        trim.position.y = -0.05; // Posisi di sela-sela casing putih dan hitam
-        // Sedikit lebih besar agar neonnya memancar keluar
-        trim.scale.set(1.02, 1.02, 1);
-        deviceGroup.add(trim);
-        rgbMaterials.push(trimMat);
+        // Bodi Hitam Bawah & Tengah (Underbelly)
+        const shapeBlack = new THREE.Shape();
+        // Batas atas potongan hitam (melengkung mengikuti lampu LED)
+        shapeBlack.moveTo(-16, 0);
+        shapeBlack.quadraticCurveTo(0, 4, 16, 0);
+        // Lanjutkan mengikuti sisa gagang bawah
+        shapeBlack.quadraticCurveTo(18, -10, 16, -16); 
+        shapeBlack.quadraticCurveTo(13, -22, 8, -12); 
+        shapeBlack.quadraticCurveTo(4, -8, 0, -8); 
+        shapeBlack.quadraticCurveTo(-4, -8, -8, -12); 
+        shapeBlack.quadraticCurveTo(-13, -22, -16, -16); 
+        shapeBlack.lineTo(-16, 0); // Tutup kurva
 
-        // Permukaan Y untuk meletakkan tombol presisi
-        const SURFACE_Y = 1.4; 
+        const extrudeBlack = { depth: 1.0, bevelEnabled: true, bevelSegments: 8, steps: 1, bevelSize: 0.4, bevelThickness: 0.4 };
+        const bodyBlackGeo = new THREE.ExtrudeGeometry(shapeBlack, extrudeBlack);
+        bodyBlackGeo.translate(0, 0, -0.5);
+        
+        const matBlack = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.1 });
+        const shellBlack = new THREE.Mesh(bodyBlackGeo, matBlack);
+        shellBlack.rotation.x = -Math.PI / 2;
+        // Letakkan sejajar agar menempel tanpa celah
+        shellBlack.position.y = 0.55; 
+        shellBlack.scale.set(0.99, 0.99, 1);
+        shellBlack.castShadow = true; shellBlack.receiveShadow = true;
+        deviceGroup.add(shellBlack);
 
         // ==========================================
-        // 2. KINETIC FORCE PADS (TENGAH ATAS)
+        // 2. BLUE LED STRIP (Membelah Casing)
         // ==========================================
-        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.2 });
-        const cylinderGeo = new THREE.CylinderGeometry(3.2, 3.4, 1.2, 32); 
-        const domeGeo = new THREE.SphereGeometry(3.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
+        const ledLineShape = new THREE.Shape();
+        ledLineShape.moveTo(-16.2, -0.15);
+        ledLineShape.quadraticCurveTo(0, 3.85, 16.2, -0.15);
+        ledLineShape.lineTo(16.2, 0.15);
+        ledLineShape.quadraticCurveTo(0, 4.15, -16.2, 0.15);
+        ledLineShape.lineTo(-16.2, -0.15);
+
+        const ledLineGeo = new THREE.ExtrudeGeometry(ledLineShape, { depth: 0.1, bevelEnabled: false });
+        // Warna biru neon terang persis di referensi
+        const ledLineMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 2.0 });
+        const ledLine = new THREE.Mesh(ledLineGeo, ledLineMat);
+        ledLine.rotation.x = -Math.PI / 2;
+        // Posisi presisi di antara putih dan hitam
+        ledLine.position.y = 1.1; 
+        deviceGroup.add(ledLine);
+
+        // VARIABEL KETINGGIAN DASAR TOMBOL (Agar Tidak Tenggelam)
+        const SURFACE_Y = 1.1; 
+
+        // ==========================================
+        // 3. TOUCHPAD PUTIH TENGAH ATAS & INDIKATOR LED
+        // ==========================================
+        const tpShape = new THREE.Shape();
+        tpShape.moveTo(-5, 6.5);
+        tpShape.lineTo(5, 6.5);
+        tpShape.quadraticCurveTo(5.5, 6.5, 5.5, 6);
+        tpShape.lineTo(5, 2.5);
+        tpShape.quadraticCurveTo(4.5, 1.5, 0, 1.5);
+        tpShape.quadraticCurveTo(-4.5, 1.5, -5, 2.5);
+        tpShape.lineTo(-5.5, 6);
+        tpShape.quadraticCurveTo(-5.5, 6.5, -5, 6.5);
+
+        const tpGeo = new THREE.ExtrudeGeometry(tpShape, { depth: 0.15, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.1 });
+        tpGeo.translate(0, 0, -0.075);
+        const tpMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+        const touchpad = new THREE.Mesh(tpGeo, tpMat);
+        touchpad.rotation.x = -Math.PI / 2;
+        touchpad.position.y = SURFACE_Y + 0.1;
+        touchpad.castShadow = true;
+        deviceGroup.add(touchpad);
+
+        // LED Indikator Effort disembunyikan di atas bingkai Touchpad
+        const leds = [];
+        const totalLeds = 14; const ledSpacing = 0.65;
+        const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
+        for(let i=0; i<totalLeds; i++) {
+            const ledGeo = new THREE.BoxGeometry(0.5, 0.1, 0.2); 
+            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
+            const led = new THREE.Mesh(ledGeo, ledMat);
+            // 3D coordinates: Z=-6.4 is the top edge of touchpad
+            led.position.set(startX + (i * ledSpacing), SURFACE_Y + 0.2, -6.4); 
+            let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
+            led.userData = { defaultColor: 0x334155, activeColor: colorHex };
+            deviceGroup.add(led); leds.push(led);
+        }
+
+        // ==========================================
+        // 4. KINETIC FORCE PADS (Pusat Hitam)
+        // ==========================================
+        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0a0f1a, roughness: 0.9, metalness: 0.2 });
+        const cylinderGeo = new THREE.CylinderGeometry(3.0, 3.2, 1.2, 32); 
+        const domeGeo = new THREE.SphereGeometry(3.0, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
 
         function createMainPad(xPosition, zPosition) {
             const padGroup = new THREE.Group();
@@ -465,11 +520,10 @@
             const dome = new THREE.Mesh(domeGeo, padMaterial);
             dome.position.y = 1.2; dome.scale.y = 0.2; dome.castShadow = true;
 
-            const ringGeo = new THREE.TorusGeometry(3.5, 0.15, 32, 32);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.0 });
+            const ringGeo = new THREE.TorusGeometry(3.3, 0.15, 32, 32);
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.0 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.position.y = 0.1; ring.rotation.x = Math.PI/2;
-            rgbMaterials.push(ringMat);
 
             padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
             padGroup.position.set(xPosition, SURFACE_Y, zPosition); 
@@ -477,7 +531,7 @@
             padGroup.userData = { isPad: true, type: 'main', originalY: SURFACE_Y, ring: ring, defaultY: SURFACE_Y };
             deviceGroup.add(padGroup); 
             
-            const hitboxGeo = new THREE.CylinderGeometry(3.8, 3.8, 3, 16);
+            const hitboxGeo = new THREE.CylinderGeometry(3.5, 3.5, 3, 16);
             const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
             const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
             hitbox.position.y = 1.0;
@@ -487,11 +541,12 @@
             mainPads.push(padGroup);
         }
 
-        createMainPad(-4, -1); 
-        createMainPad(4, -1);  
+        // Posisi strategis di bawah touchpad
+        createMainPad(-4.2, -0.5); 
+        createMainPad(4.2, -0.5);  
 
         // ==========================================
-        // 3. ANALOG JOYSTICK FLEXIBLE + LAMPU RGB BAWAH
+        // 5. ANALOG JOYSTICK FLEXIBLE (Di Bawah Hitam)
         // ==========================================
         function createAnalogStick(x, z) {
             const analogGroup = new THREE.Group();
@@ -499,17 +554,10 @@
             const socketGeo = new THREE.SphereGeometry(2.0, 32, 16, 0, Math.PI*2, 0, Math.PI/2.2);
             const socketMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
             const socket = new THREE.Mesh(socketGeo, socketMat);
-            socket.position.y = -0.5; 
+            socket.position.y = -0.2; // Rata dengan casing
             
-            const rgbRingGeo = new THREE.TorusGeometry(2.2, 0.1, 16, 32);
-            const rgbRingMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.5 });
-            const rgbRing = new THREE.Mesh(rgbRingGeo, rgbRingMat);
-            rgbRing.position.y = 0.05; rgbRing.rotation.x = Math.PI/2;
-            analogGroup.add(rgbRing);
-            rgbMaterials.push(rgbRingMat);
-
             const stickParts = new THREE.Group();
-            stickParts.position.y = -0.5; 
+            stickParts.position.y = -0.2; 
 
             const shaftGeo = new THREE.CylinderGeometry(0.5, 0.5, 2, 16);
             shaftGeo.translate(0, 1, 0); 
@@ -543,11 +591,12 @@
             analogSticks.push(analogGroup);
         }
         
-        createAnalogStick(-8, 6);
-        createAnalogStick(8, 6);
+        // Simetris di gagang bawah (PS layout)
+        createAnalogStick(-7, 6);
+        createAnalogStick(7, 6);
 
         // ==========================================
-        // 4. D-PAD + RGB
+        // 6. D-PAD HITAM (Kiri Atas)
         // ==========================================
         const dpadGroup = new THREE.Group();
         const dpadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
@@ -556,17 +605,10 @@
         const dpadV = new THREE.Mesh(dpadVGeo, dpadMat); dpadV.castShadow = true; dpadV.position.y = 0.3;
         const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true; dpadH.position.y = 0.3;
         dpadGroup.add(dpadV); dpadGroup.add(dpadH);
-        
-        const dpadRgbGeo = new THREE.TorusGeometry(2.5, 0.1, 16, 32);
-        const dpadRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.5 });
-        const dpadRgb = new THREE.Mesh(dpadRgbGeo, dpadRgbMat);
-        dpadRgb.position.y = 0.05; dpadRgb.rotation.x = Math.PI/2;
-        dpadGroup.add(dpadRgb);
-        rgbMaterials.push(dpadRgbMat);
 
-        dpadGroup.position.set(-12, SURFACE_Y, 0);
-        dpadGroup.rotation.x = -0.05;
-        dpadGroup.rotation.z = 0.05;
+        dpadGroup.position.set(-11, SURFACE_Y, -2); // Posisi pas di atas area Putih
+        dpadGroup.rotation.x = -0.02;
+        dpadGroup.rotation.z = 0.02;
 
         dpadGroup.userData = { isPad: true, type: 'dpad', originalY: SURFACE_Y, mesh: dpadGroup };
         deviceGroup.add(dpadGroup);
@@ -577,79 +619,47 @@
         pads.push(dpadHitbox);
 
         // ==========================================
-        // 5. TOMBOL AKSI PLAYSTATION
+        // 7. CRYSTAL ACTION BUTTONS (Transparan + Warna Dalam)
         // ==========================================
         function createActionButton(x, z, colorHex) {
             const btnGroup = new THREE.Group();
             
             const holeGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.2, 32);
-            const hole = new THREE.Mesh(holeGeo, shellMatBot);
+            const hole = new THREE.Mesh(holeGeo, matWhite);
             hole.position.y = 0.1; 
 
-            // Cincin RGB Dalam
-            const btnRgbGeo = new THREE.TorusGeometry(1.1, 0.05, 16, 32);
-            const btnRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 2.0 });
-            const btnRgb = new THREE.Mesh(btnRgbGeo, btnRgbMat);
-            btnRgb.position.y = 0.15; btnRgb.rotation.x = Math.PI/2;
-            btnGroup.add(btnRgb);
-            rgbMaterials.push(btnRgbMat);
+            // Core menyala berwarna
+            const coreGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 32);
+            const coreMat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 1.0 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.position.y = 0.4;
             
-            const btnGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.6, 32);
-            const btnMat = new THREE.MeshStandardMaterial({ 
-                color: colorHex, roughness: 0.1, metalness: 0.4, 
-                transparent: true, opacity: 0.9 
+            // Cangkang kaca bening menutupi core
+            const btnGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.6, 32);
+            const btnMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0xffffff, roughness: 0.1, transmission: 0.9, thickness: 0.5, transparent: true, opacity: 0.6
             });
             const btn = new THREE.Mesh(btnGeo, btnMat);
             btn.position.y = 0.4; btn.castShadow = true;
 
-            btnGroup.add(hole); btnGroup.add(btn);
+            btnGroup.add(hole); btnGroup.add(core); btnGroup.add(btn);
             
             btnGroup.position.set(x, SURFACE_Y, z);
-            btnGroup.rotation.x = -0.05;
-            btnGroup.rotation.z = -0.05;
+            btnGroup.rotation.x = -0.02;
+            btnGroup.rotation.z = -0.02;
             
-            btnGroup.userData = { isPad: true, type: 'action', originalY: 0.4, mesh: btn };
+            btnGroup.userData = { isPad: true, type: 'action', originalY: 0.4, mesh: btn, core: core };
             deviceGroup.add(btnGroup); pads.push(btn);
         }
         
-        createActionButton(12, -1.8, 0x10b981);   // Atas 
-        createActionButton(12, 1.8, 0x38bdf8);    // Bawah
-        createActionButton(10.2, 0, 0xd946ef);    // Kiri
-        createActionButton(13.8, 0, 0xef4444);    // Kanan
+        // Layout PlayStation
+        createActionButton(11, -4.0, 0xf97316);   // Atas (Orange)
+        createActionButton(12.5, -2.5, 0xef4444); // Kanan (Merah)
+        createActionButton(11, -1.0, 0x10b981);   // Bawah (Hijau)
+        createActionButton(9.5, -2.5, 0x38bdf8);  // Kiri (Biru)
 
         // ==========================================
-        // 6. LED LIGHTBAR (POSISI DI DASHBOARD ATAS)
-        // ==========================================
-        const leds = [];
-        const panelGroup = new THREE.Group();
-        
-        // Posisikan pas di tepi atas gamepad
-        panelGroup.position.set(0, SURFACE_Y + 0.3, -5.5);
-        panelGroup.rotation.x = -Math.PI / 6; 
-        deviceGroup.add(panelGroup);
-
-        // Stand / Bingkai Lightbar
-        const ledCaseGeo = new THREE.BoxGeometry(12, 1.2, 0.8); 
-        const ledCaseMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.5});
-        const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
-        panelGroup.add(ledCase);
-        
-        const totalLeds = 14; const ledSpacing = 0.8;
-        const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
-
-        for(let i=0; i<totalLeds; i++) {
-            const ledGeo = new THREE.BoxGeometry(0.5, 0.8, 0.2); 
-            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
-            const led = new THREE.Mesh(ledGeo, ledMat);
-            led.position.set(startX + (i * ledSpacing), 0, 0.4); // Maju agar nampak
-            
-            let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
-            led.userData = { defaultColor: 0x334155, activeColor: colorHex };
-            panelGroup.add(led); leds.push(led);
-        }
-
-        // ==========================================
-        // LOGIKA INTERAKSI & RAYCASTER
+        // LOGIKA INTERAKSI FLEXIBLE & RAYCASTER
         // ==========================================
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -690,10 +700,11 @@
                 if (activePad) {
                     if (activePad.userData.type === 'main') {
                         isPressing = true; 
-                        // Efek Amblas instan
-                        activePad.position.y = activePad.userData.originalY - 0.5;
+                        activePad.userData.ring.material.color.setHex(0x10b981);
+                        activePad.userData.ring.material.emissive.setHex(0x059669);
                     } else if (activePad.userData.type === 'action') {
                         activePad.userData.mesh.position.y = activePad.userData.originalY - 0.2;
+                        activePad.userData.core.position.y = activePad.userData.originalY - 0.2;
                     } else if (activePad.userData.type === 'dpad') {
                         activePad.position.y = activePad.userData.originalY - 0.2;
                     }
@@ -719,8 +730,12 @@
             if(activePad) { 
                 if (activePad.userData.type === 'main') {
                     isPressing = false;
+                    activePad.userData.ring.material.color.setHex(0x38bdf8); 
+                    activePad.userData.ring.material.emissive.setHex(0x0284c7); 
+                    activePad.userData.ring.scale.set(1, 1, 1);
                 } else if (activePad.userData.type === 'action') {
                     activePad.userData.mesh.position.y = activePad.userData.originalY;
+                    activePad.userData.core.position.y = activePad.userData.originalY;
                 } else if (activePad.userData.type === 'dpad') {
                     activePad.position.y = activePad.userData.originalY;
                 }
@@ -759,13 +774,6 @@
         function animate() {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
-            
-            // --- EFEK BREATHING LAMPU RGB PELANGI ---
-            const time = clock.getElapsedTime();
-            const rgbColor = new THREE.Color().setHSL((time * 0.5) % 1, 1, 0.5); 
-            rgbMaterials.forEach(mat => {
-                mat.emissive.copy(rgbColor);
-            });
 
             // Fisika Force
             if (isPressing) {
@@ -878,10 +886,10 @@
             // Animasi Amblas Kinetic Pads
             mainPads.forEach(pad => {
                 if (activePad === pad) {
-                    // Amblas lebih halus berdasar persentase
                     pad.position.y = pad.userData.defaultY - (effortPercentage / 100) * 0.6;
+                    const scaleAura = 1 + (effortPercentage / 100) * 0.25; 
+                    pad.userData.ring.scale.set(scaleAura, scaleAura, scaleAura);
                 } else {
-                    // Kembali ke atas
                     pad.position.y += (pad.userData.defaultY - pad.position.y) * 0.3;
                 }
             });
@@ -904,9 +912,10 @@
                 }
             });
 
+            // Update LED Dashboard
             const activeLedCount = Math.floor((effortPercentage / 100) * totalLeds);
             for(let i=0; i<totalLeds; i++) {
-                if (i < activeLedCount) { leds[i].material.color.setHex(0x38bdf8); } 
+                if (i < activeLedCount) { leds[i].material.color.setHex(leds[i].userData.activeColor); } 
                 else { leds[i].material.color.setHex(0x1e293b); }
             }
 
