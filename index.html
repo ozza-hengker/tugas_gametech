@@ -345,9 +345,9 @@
         scene.background = new THREE.Color(0xeef2f5);
         scene.fog = new THREE.FogExp2(0xeef2f5, 0.012);
 
-        // Kamera diposisikan persis untuk melihat bentuk ergonomisnya
+        // Kamera dimundurkan agar casing lebar terlihat proporsional
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 32, 38);
+        camera.position.set(0, 38, 48);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -358,7 +358,7 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true; controls.dampingFactor = 0.05;
         controls.maxPolarAngle = Math.PI / 2 - 0.05; 
-        controls.minDistance = 20; controls.maxDistance = 60;
+        controls.minDistance = 20; controls.maxDistance = 100;
         // Batasi geser agar selalu fokus di tengah
         controls.enablePan = false; 
 
@@ -390,20 +390,20 @@
         const mainPads = [];
 
         // ==========================================
-        // 1. MEMBANGUN BODI GAMEPAD (EKSTRUSI CUSTOM)
+        // 1. MEMBANGUN BODI GAMEPAD (SKALA DIPERBESAR!)
         // ==========================================
-        // Menggambar outline gamepad dari atas
+        // Menggambar outline gamepad dari atas dengan ukuran jauh lebih lega
         const shape = new THREE.Shape();
-        shape.moveTo(-6, 5);
-        shape.lineTo(6, 5); // Tepi atas lurus
-        shape.quadraticCurveTo(12, 5, 12, 0); // Bahu kanan
-        shape.quadraticCurveTo(14, -6, 10, -9); // Grip kanan luar
-        shape.quadraticCurveTo(8, -11, 5, -7); // Grip kanan bawah (melengkung)
-        shape.quadraticCurveTo(4, -2, 0, -2); // Lengkungan dalam ke tengah
-        shape.quadraticCurveTo(-4, -2, -5, -7); // Lengkungan dalam ke grip kiri
-        shape.quadraticCurveTo(-8, -11, -10, -9); // Grip kiri bawah
-        shape.quadraticCurveTo(-14, -6, -12, 0); // Grip kiri luar
-        shape.quadraticCurveTo(-12, 5, -6, 5); // Bahu kiri
+        shape.moveTo(-10, 8);
+        shape.lineTo(10, 8); 
+        shape.quadraticCurveTo(20, 8, 20, 0); 
+        shape.quadraticCurveTo(22, -10, 16, -14); 
+        shape.quadraticCurveTo(13, -19, 7, -10); 
+        shape.quadraticCurveTo(5, -3, 0, -3); 
+        shape.quadraticCurveTo(-5, -3, -7, -10); 
+        shape.quadraticCurveTo(-13, -19, -16, -14); 
+        shape.quadraticCurveTo(-22, -10, -20, 0); 
+        shape.quadraticCurveTo(-20, 8, -10, 8); 
 
         // Setting ketebalan 3D-nya (Shell atas putih)
         const extrudeSettingsTop = {
@@ -436,7 +436,7 @@
         deviceGroup.add(shellBot);
 
         // ==========================================
-        // 2. KINETIC FORCE PADS (BINTANG UTAMA DI TENGAH)
+        // 2. KINETIC FORCE PADS (Tengah Atas)
         // ==========================================
         const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.2 });
         const cylinderGeo = new THREE.CylinderGeometry(3.6, 3.8, 1.5, 32); 
@@ -456,8 +456,9 @@
             ring.position.y = -0.6; ring.rotation.x = Math.PI/2;
 
             padGroup.add(cylinder); padGroup.add(dome); padGroup.add(ring);
-            // Posisi Z disesuaikan dengan shape baru (Z negatif = ke arah belakang/atas gamepad)
-            padGroup.position.set(xPosition, 2.5, -2.5); 
+            
+            // Dipindah agar posisinya lapang
+            padGroup.position.set(xPosition, 2.5, -2); 
             
             padGroup.userData = { isPad: true, type: 'main', originalY: 2.5, ring: ring };
             deviceGroup.add(padGroup); 
@@ -473,13 +474,13 @@
             return padGroup;
         }
 
-        const pad1 = createMainPad(-4.5); // Pad Kiri
-        const pad2 = createMainPad(4.5);  // Pad Kanan
+        const pad1 = createMainPad(-5.5); // Pad Kiri
+        const pad2 = createMainPad(5.5);  // Pad Kanan
 
-        // Pelat Hitam di bawah Kinetic Pads sebagai dudukan
-        const plateGeo = new THREE.BoxGeometry(18, 0.5, 9);
+        // Pelat Hitam di bawah Kinetic Pads yang diperlebar
+        const plateGeo = new THREE.BoxGeometry(22, 0.5, 10);
         const plate = new THREE.Mesh(plateGeo, shellMatBot);
-        plate.position.set(0, 1.8, -2.5);
+        plate.position.set(0, 1.8, -1.5);
         deviceGroup.add(plate);
 
         // ==========================================
@@ -524,9 +525,9 @@
             pads.push(hitbox);
         }
         
-        // Analog Kiri & Kanan di Grips Bawah
-        createAnalogStick(-7, 4);
-        createAnalogStick(7, 4);
+        // Posisikan Analog di gagang (Grips) yang sudah lebar
+        createAnalogStick(-10, 6);
+        createAnalogStick(10, 6);
 
         // ==========================================
         // 4. D-PAD (KIRI ATAS)
@@ -539,11 +540,10 @@
         const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true;
         dpadGroup.add(dpadV); dpadGroup.add(dpadH);
         
-        dpadGroup.position.set(-11, 2.2, -1.5);
-        
-        // Rotasi mengikuti lekukan bodi
-        dpadGroup.rotation.x = -0.1;
-        dpadGroup.rotation.z = 0.1;
+        // Posisikan dengan lega
+        dpadGroup.position.set(-15, 2.2, -2.5);
+        dpadGroup.rotation.x = -0.05;
+        dpadGroup.rotation.z = 0.05;
 
         dpadGroup.userData = { isPad: true, type: 'dpad', originalY: 2.2, mesh: dpadGroup };
         deviceGroup.add(dpadGroup);
@@ -573,19 +573,47 @@
             btnGroup.add(hole); btnGroup.add(btn);
             btnGroup.position.set(x, 2.2, z);
             
-            // Rotasi mengikuti bodi kanan
-            btnGroup.rotation.x = -0.1;
-            btnGroup.rotation.z = -0.1;
+            btnGroup.rotation.x = -0.05;
+            btnGroup.rotation.z = -0.05;
             
             btnGroup.userData = { isPad: true, type: 'action', originalY: 0.3, mesh: btn };
             deviceGroup.add(btnGroup); pads.push(btn);
         }
         
-        // Layout Diamond di kanan atas
-        createActionButton(11, -3.5, 0x10b981);   // Segitiga (Atas)
-        createActionButton(11, 0.5, 0x38bdf8);    // X (Bawah)
-        createActionButton(9, -1.5, 0xd946ef);     // Kotak (Kiri)
-        createActionButton(13, -1.5, 0xef4444);    // Bulat (Kanan)
+        // Layout Diamond, diposisikan lebih lega
+        createActionButton(15, -4.5, 0x10b981);   // Segitiga (Atas)
+        createActionButton(15, -0.5, 0x38bdf8);   // X (Bawah)
+        createActionButton(13, -2.5, 0xd946ef);   // Kotak (Kiri)
+        createActionButton(17, -2.5, 0xef4444);   // Bulat (Kanan)
+
+        // ==========================================
+        // 6. LED LIGHTBAR
+        // ==========================================
+        const leds = [];
+        const panelGroup = new THREE.Group();
+        // Dipindah menjauh agar mengikuti desain bodi raksasa
+        panelGroup.position.set(0, 4, -13);
+        panelGroup.rotation.x = -Math.PI / 6;
+        deviceGroup.add(panelGroup);
+
+        const ledCaseGeo = new THREE.BoxGeometry(20, 2, 1);
+        const ledCaseMat = new THREE.MeshStandardMaterial({color: 0x0f172a, roughness: 0.5});
+        const ledCase = new THREE.Mesh(ledCaseGeo, ledCaseMat);
+        panelGroup.add(ledCase);
+        
+        const totalLeds = 18; const ledSpacing = 1.05;
+        const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
+
+        for(let i=0; i<totalLeds; i++) {
+            const ledGeo = new THREE.BoxGeometry(0.7, 1.2, 0.5);
+            const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
+            const led = new THREE.Mesh(ledGeo, ledMat);
+            led.position.set(startX + (i * ledSpacing), 0, 0.4);
+            
+            let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
+            led.userData = { defaultColor: 0x334155, activeColor: colorHex };
+            panelGroup.add(led); leds.push(led);
+        }
 
         // ==========================================
         // LOGIKA INTERAKSI & RAYCASTER
@@ -807,6 +835,12 @@
                     pad.position.y += (pad.userData.originalY - pad.position.y) * 0.3;
                 }
             });
+
+            const activeLedCount = Math.floor((effortPercentage / 100) * totalLeds);
+            for(let i=0; i<totalLeds; i++) {
+                if (i < activeLedCount) { leds[i].material.color.setHex(leds[i].userData.activeColor); } 
+                else { leds[i].material.color.setHex(leds[i].userData.defaultColor); }
+            }
 
             controls.update();
             renderer.render(scene, camera);
