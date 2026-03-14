@@ -10,18 +10,20 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #eef2f5; 
+            /* PERUBAHAN: Background gelap (Onyx) agar RGB mencolok */
+            background-color: #0b0f19; 
             font-family: 'Nunito', sans-serif;
-            color: #1e293b;
+            color: #f1f5f9;
             user-select: none;
         }
 
         .bg-pattern {
             position: absolute;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            /* PERUBAHAN: Pola background disesuaikan untuk dark mode */
+            background-image: radial-gradient(#1e293b 1.5px, transparent 1.5px);
             background-size: 35px 35px;
-            opacity: 0.7;
+            opacity: 0.8;
             pointer-events: none;
             z-index: 0;
         }
@@ -37,11 +39,12 @@
         
         .glass-panel {
             position: absolute;
-            background: rgba(255, 255, 255, 0.85);
+            /* PERUBAHAN: Panel Glassmorphism gelap */
+            background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255,255,255,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
             padding: 25px;
             border-radius: 24px;
             pointer-events: auto;
@@ -58,30 +61,33 @@
             text-align: center;
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 2px dashed #e2e8f0;
+            /* PERUBAHAN: Garis batas disesuaikan untuk dark mode */
+            border-bottom: 2px dashed #334155;
         }
         
         .logo-container img {
             max-width: 180px;
             height: auto;
+            /* Filter putih agar logo FILKOM jelas di background gelap (opsional, tergantung warna logo aslimu) */
+            filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.3));
         }
 
-        h1 { margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 900; color: #0056a0; text-transform: uppercase; letter-spacing: 1px;}
-        p { margin: 5px 0; font-size: 15px; color: #475569; line-height: 1.5; pointer-events: none;}
-        .highlight { color: #f37021; font-weight: 800; }
+        h1 { margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px;}
+        p { margin: 5px 0; font-size: 15px; color: #cbd5e1; line-height: 1.5; pointer-events: none;}
+        .highlight { color: #f59e0b; font-weight: 800; }
         
-        .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+        .gear-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid #334155; }
         .gear-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .gear-btn {
-            background: #f1f5f9; color: #64748b; border: 2px solid #cbd5e1;
+            background: #1e293b; color: #94a3b8; border: 2px solid #475569;
             padding: 8px 5px; border-radius: 10px; cursor: pointer;
             font-family: 'Nunito', sans-serif; font-weight: bold; font-size: 14px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex: 1;
         }
-        .gear-btn:hover { background: #e0f2fe; border-color: #38bdf8; color: #0284c7; transform: translateY(-2px); }
+        .gear-btn:hover { background: #334155; border-color: #38bdf8; color: #e0f2fe; transform: translateY(-2px); }
         .gear-btn.active {
-            background: #0056a0; color: #fff; border-color: #0056a0;
-            box-shadow: 0 6px 15px rgba(0, 86, 160, 0.3);
+            background: #0ea5e9; color: #fff; border-color: #38bdf8;
+            box-shadow: 0 6px 15px rgba(14, 165, 233, 0.4);
         }
 
         #pressure-info {
@@ -90,19 +96,19 @@
             pointer-events: none; transition: all 0.2s;
             border-width: 3px; min-width: 320px;
         }
-        .output-text { font-size: 42px; color: #0056a0; margin-top: 0px; font-weight: 900; line-height: 1;}
-        #text-force { font-size: 14px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px;}
-        #text-kg { font-size: 18px; color: #f37021; font-weight: 900; margin-bottom: 8px; } 
+        .output-text { font-size: 42px; color: #38bdf8; margin-top: 0px; font-weight: 900; line-height: 1;}
+        #text-force { font-size: 14px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px;}
+        #text-kg { font-size: 18px; color: #f59e0b; font-weight: 900; margin-bottom: 8px; } 
 
         #stamina-container {
-            width: 100%; height: 14px; background: #e2e8f0; border-radius: 7px;
-            margin: 12px auto 6px auto; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            width: 100%; height: 14px; background: #334155; border-radius: 7px;
+            margin: 12px auto 6px auto; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
         }
         #stamina-bar {
             width: 100%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); transition: width 0.1s;
         }
         #stamina-label {
-            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #64748b;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #cbd5e1;
         }
 
         #calibration-modal {
@@ -110,54 +116,54 @@
             width: 500px; text-align: center; z-index: 100;
             pointer-events: none; 
         }
-        #calibration-modal h2 { font-family: 'Montserrat', sans-serif; color: #f37021; font-size: 28px; margin-bottom: 10px; font-weight: 900;}
-        .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #475569; }
+        #calibration-modal h2 { font-family: 'Montserrat', sans-serif; color: #f59e0b; font-size: 28px; margin-bottom: 10px; font-weight: 900;}
+        .calib-instruction { font-size: 16px; margin-bottom: 20px; color: #cbd5e1; }
         
         #progress-bg {
-            width: 100%; height: 36px; background: #e2e8f0;
+            width: 100%; height: 36px; background: #334155;
             border-radius: 18px; border: none;
             overflow: hidden; margin-bottom: 15px; position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
         }
         #progress-bar {
-            width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #0056a0);
+            width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #0ea5e9);
             transition: width 0.1s;
         }
         #progress-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-family: 'Montserrat', sans-serif; font-weight: 800; color: #fff; font-size: 14px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4); letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8); letter-spacing: 1px;
         }
 
         .btn-start {
-            background: linear-gradient(135deg, #f37021, #ea580c); color: #fff; font-size: 16px;
+            background: linear-gradient(135deg, #f59e0b, #ea580c); color: #fff; font-size: 16px;
             padding: 12px 24px; border: none; border-radius: 12px; font-family: 'Montserrat', sans-serif;
             font-weight: 800; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 6px 20px rgba(243, 112, 33, 0.3); pointer-events: auto;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3); pointer-events: auto;
         }
-        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(243, 112, 33, 0.5); }
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5); }
 
         #calib-status { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; color: #ef4444; height: 30px; margin-top: 10px;}
 
-        .profile-panel { margin-bottom: 20px; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 16px; background: #f8fafc; }
+        .profile-panel { margin-bottom: 20px; border: 2px dashed #475569; padding: 15px; border-radius: 16px; background: rgba(30, 41, 59, 0.5); }
         .profile-btn {
-            background: #fff; color: #64748b; border: 2px solid #cbd5e1;
+            background: #1e293b; color: #cbd5e1; border: 2px solid #475569;
             padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Nunito', sans-serif;
             font-weight: bold; margin: 0 5px; transition: 0.2s; font-size: 15px;
         }
-        .profile-btn:hover { border-color: #94a3b8; color: #334155; }
-        .profile-btn.active { background: #0056a0; color: #fff; border-color: #0056a0; box-shadow: 0 4px 15px rgba(0, 86, 160, 0.3); }
+        .profile-btn:hover { border-color: #94a3b8; color: #f8fafc; }
+        .profile-btn.active { background: #0ea5e9; color: #fff; border-color: #38bdf8; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); }
 
         #minigame-panel {
             position: absolute; top: 20px; right: 20px; width: 320px;
             display: none; 
         }
         .mg-title { font-family: 'Montserrat', sans-serif; color: #ef4444; font-size: 18px; font-weight: 900; text-align: center; margin-bottom: 8px;}
-        .mg-desc { font-size: 14px; text-align: center; color: #64748b; margin-bottom: 12px; line-height: 1.4; font-weight: 600;}
+        .mg-desc { font-size: 14px; text-align: center; color: #cbd5e1; margin-bottom: 12px; line-height: 1.4; font-weight: 600;}
         .mg-bar-container {
-            height: 30px; background: #e2e8f0; border-radius: 15px;
+            height: 30px; background: #334155; border-radius: 15px;
             border: none; position: relative; overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
         }
         #mg-bar-fill {
             height: 100%; width: 30%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
@@ -165,7 +171,7 @@
         }
         #mg-status {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 900; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 900; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         #mg-overlay-msg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -173,12 +179,12 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
-        .mg-overlay-title { font-weight: 900; font-size: 26px; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+        .mg-overlay-title { font-weight: 900; font-size: 26px; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
         
         .btn-retry {
             background: #fff; color: #10b981; border: none; padding: 10px 24px;
             border-radius: 10px; font-family: 'Montserrat', sans-serif; font-weight: 800;
-            font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .btn-retry:hover { background: #f1f5f9; transform: translateY(-2px); }
 
@@ -198,7 +204,7 @@
         <p class="calib-instruction">Alat harus memetakan limit fisik Anda. <br><b>Tahan Klik (Hold) pada BANTALAN KINETIC HITAM</b> sekuat mungkin sampai indikator penuh!</p>
         
         <div class="profile-panel">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: #0056a0; font-weight: 800; pointer-events: none;">Pilih Profil Fisik Anda:</p>
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #38bdf8; font-weight: 800; pointer-events: none;">Pilih Profil Fisik Anda:</p>
             <button id="btn-prof-adult" class="profile-btn active" onclick="setProfile('adult')" style="pointer-events: auto;">Orang Dewasa</button>
             <button id="btn-prof-child" class="profile-btn" onclick="setProfile('child')" style="pointer-events: auto;">Anak Kecil</button>
         </div>
@@ -214,7 +220,7 @@
     <div id="ui-play" style="display: none;">
         <div id="ui-overlay" class="glass-panel">
             <div class="logo-container">
-                <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0056a0/ffffff?text=FILKOM+UB';">
+                <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/38bdf8/ffffff?text=FILKOM+UB';">
             </div>
             <h1>Universal Gamepad</h1>
             <p style="color: #10b981; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 800;">● WIRELESS HYBRID SYSTEM ONLINE</p>
@@ -223,7 +229,7 @@
             <p id="info-max-force">Kekuatan Fisik Maksimal: 0.0 Kg</p>
             
             <div class="gear-panel">
-                <p style="color: #475569; font-weight: 800; pointer-events: none; margin-bottom: 8px;">⚙️ KINETIC MULTIPLIER:</p>
+                <p style="color: #94a3b8; font-weight: 800; pointer-events: none; margin-bottom: 8px;">⚙️ KINETIC MULTIPLIER:</p>
                 <div class="gear-buttons">
                     <button class="gear-btn active" onclick="setGear(1, 15)" id="btn-gear1">Gear 1<br><small>15 CPS</small></button>
                     <button class="gear-btn" onclick="setGear(2, 30)" id="btn-gear2">Gear 2<br><small>30 CPS</small></button>
@@ -339,11 +345,12 @@
         }
 
         // ==========================================
-        // SETUP THREE.JS (TEMA CLEAN LIGHT)
+        // SETUP THREE.JS (TEMA GAMER DARK)
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xeef2f5);
-        scene.fog = new THREE.FogExp2(0xeef2f5, 0.012);
+        // PERUBAHAN: Background gelap agar RGB mencolok
+        scene.background = new THREE.Color(0x0b0f19);
+        scene.fog = new THREE.FogExp2(0x0b0f19, 0.012);
 
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 42, 45);
@@ -360,21 +367,23 @@
         controls.minDistance = 20; controls.maxDistance = 100;
         controls.enablePan = false; 
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Pencahayaan diredupkan sedikit agar RGB lebih glowing
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
         dirLight.position.set(10, 30, 20);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
         scene.add(dirLight);
         
-        const spotLight = new THREE.SpotLight(0x0056a0, 0.5);
+        const spotLight = new THREE.SpotLight(0x0ea5e9, 0.8);
         spotLight.position.set(0, -10, 20); 
         scene.add(spotLight);
 
         const floorGeo = new THREE.PlaneGeometry(200, 200);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1 });
+        // PERUBAHAN: Lantai gelap
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8, metalness: 0.2 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2; floor.position.y = -6; floor.receiveShadow = true;
         scene.add(floor);
@@ -389,19 +398,19 @@
         const rgbMaterials = []; // ARRAY UNTUK MENYIMPAN MATERIAL LAMPU RGB
 
         // ==========================================
-        // 1. MEMBANGUN BODI GAMEPAD (DESAIN RAMPING & ERGONOMIS)
+        // 1. MEMBANGUN BODI GAMEPAD
         // ==========================================
         const shape = new THREE.Shape();
         shape.moveTo(-12, 6);
-        shape.lineTo(12, 6); // Garis bahu atas
-        shape.quadraticCurveTo(18, 6, 18, -2); // Bahu Kanan
-        shape.quadraticCurveTo(19, -12, 14, -16); // Grip Kanan Luar
-        shape.quadraticCurveTo(10, -18, 7, -10); // Ujung Grip Kanan
-        shape.quadraticCurveTo(4, -1, 0, -1); // Lekukan Dalam Tengah Kanan
-        shape.quadraticCurveTo(-4, -1, -7, -10); // Lekukan Dalam Tengah Kiri
-        shape.quadraticCurveTo(-10, -18, -14, -16); // Ujung Grip Kiri
-        shape.quadraticCurveTo(-19, -12, -18, -2); // Grip Kiri Luar
-        shape.quadraticCurveTo(-18, 6, -12, 6); // Bahu Kiri
+        shape.lineTo(12, 6); 
+        shape.quadraticCurveTo(18, 6, 18, -2); 
+        shape.quadraticCurveTo(19, -12, 14, -16); 
+        shape.quadraticCurveTo(10, -18, 7, -10); 
+        shape.quadraticCurveTo(4, -1, 0, -1); 
+        shape.quadraticCurveTo(-4, -1, -7, -10); 
+        shape.quadraticCurveTo(-10, -18, -14, -16); 
+        shape.quadraticCurveTo(-19, -12, -18, -2); 
+        shape.quadraticCurveTo(-18, 6, -12, 6); 
 
         const extrudeSettingsTop = { depth: 1.5, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.8, bevelThickness: 0.8 };
         const bodyGeoTop = new THREE.ExtrudeGeometry(shape, extrudeSettingsTop);
@@ -418,7 +427,8 @@
         const bodyGeoBot = new THREE.ExtrudeGeometry(shape, extrudeSettingsBot);
         bodyGeoBot.translate(0, 0, -0.6);
         
-        const shellMatBot = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7, metalness: 0.2 });
+        // PERUBAHAN: Bodi bawah lebih gelap (Onyx)
+        const shellMatBot = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7, metalness: 0.2 });
         const shellBot = new THREE.Mesh(bodyGeoBot, shellMatBot);
         shellBot.rotation.x = -Math.PI / 2;
         shellBot.position.y = -0.5; 
@@ -426,19 +436,22 @@
         shellBot.castShadow = true; shellBot.receiveShadow = true;
         deviceGroup.add(shellBot);
 
-        // LAMPU RGB STRIP (Memisahkan warna putih atas dan hitam bawah)
+        // LAMPU RGB STRIP (Membelah bodi)
         const accentGeo = new THREE.BoxGeometry(40, 0.3, 20);
-        const accentMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 0.8 });
+        // PERUBAHAN: Intensitas Emissive ditingkatkan agar lebih terang
+        const accentMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 2.0 });
         const accent = new THREE.Mesh(accentGeo, accentMat);
         accent.position.y = 0.2;
         deviceGroup.add(accent);
-        rgbMaterials.push(accentMat); // Daftarkan ke sistem RGB
+        rgbMaterials.push(accentMat);
 
-        // KETINGGIAN PERMUKAAN (Y-Axis) YANG PRESISI AGAR TOMBOL TIDAK TENGGELAM
+        // KETINGGIAN PERMUKAAN YANG PRESISI
         const SURFACE_Y = 2.6; 
 
+        // PERUBAHAN PENTING: KOTAK ANEH (plateGeo) DI HAPUS 100%
+
         // ==========================================
-        // 2. KINETIC FORCE PADS (TENGAH ATAS)
+        // 2. KINETIC FORCE PADS
         // ==========================================
         const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.2 });
         const cylinderGeo = new THREE.CylinderGeometry(3.6, 3.8, 1.5, 32); 
@@ -490,9 +503,8 @@
             const socket = new THREE.Mesh(socketGeo, socketMat);
             socket.position.y = -0.5; 
             
-            // LAMPU RGB MELINGKAR DI BAWAH ANALOG
             const rgbRingGeo = new THREE.TorusGeometry(2.5, 0.15, 16, 32);
-            const rgbRingMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 0.8 });
+            const rgbRingMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 2.0 });
             const rgbRing = new THREE.Mesh(rgbRingGeo, rgbRingMat);
             rgbRing.position.y = 0.1; rgbRing.rotation.x = Math.PI/2;
             analogGroup.add(rgbRing);
@@ -547,9 +559,8 @@
         const dpadH = new THREE.Mesh(dpadHGeo, dpadMat); dpadH.castShadow = true; dpadH.position.y = 0.4;
         dpadGroup.add(dpadV); dpadGroup.add(dpadH);
         
-        // LAMPU RGB MELINGKARI DPAD
         const dpadRgbGeo = new THREE.TorusGeometry(3.2, 0.15, 16, 32);
-        const dpadRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 0.8 });
+        const dpadRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 2.0 });
         const dpadRgb = new THREE.Mesh(dpadRgbGeo, dpadRgbMat);
         dpadRgb.position.y = 0.1; dpadRgb.rotation.x = Math.PI/2;
         dpadGroup.add(dpadRgb);
@@ -566,7 +577,7 @@
         pads.push(dpadHitbox);
 
         // ==========================================
-        // 5. TOMBOL AKSI PLAYSTATION + LAMPU RGB DALAM
+        // 5. TOMBOL AKSI PLAYSTATION + LAMPU RGB
         // ==========================================
         function createActionButton(x, z, colorHex) {
             const btnGroup = new THREE.Group();
@@ -575,9 +586,8 @@
             const hole = new THREE.Mesh(holeGeo, shellMatBot);
             hole.position.y = 0.1; 
 
-            // Cincin RGB menyala di dalam lubang tombol
             const btnRgbGeo = new THREE.TorusGeometry(1.3, 0.05, 16, 32);
-            const btnRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 0.8 });
+            const btnRgbMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff0000, emissiveIntensity: 2.0 });
             const btnRgb = new THREE.Mesh(btnRgbGeo, btnRgbMat);
             btnRgb.position.y = 0.15; btnRgb.rotation.x = Math.PI/2;
             btnGroup.add(btnRgb);
@@ -599,20 +609,20 @@
             deviceGroup.add(btnGroup); pads.push(btn);
         }
         
-        createActionButton(13, -3, 0x10b981);   // Atas (Hijau)
-        createActionButton(13, 1, 0x38bdf8);    // Bawah (Biru)
-        createActionButton(11, -1, 0xd946ef);   // Kiri (Pink)
-        createActionButton(15, -1, 0xef4444);   // Kanan (Merah)
+        createActionButton(13, -3, 0x10b981);   
+        createActionButton(13, 1, 0x38bdf8);    
+        createActionButton(11, -1, 0xd946ef);   
+        createActionButton(15, -1, 0xef4444);   
 
         // ==========================================
-        // 6. LED LIGHTBAR (POSISI DISEMPURNAKAN MENGGUNAKAN STAND)
+        // 6. LED LIGHTBAR 
         // ==========================================
         const leds = [];
         const panelGroup = new THREE.Group();
         
         // Memposisikan Lightbar tegak dan jelas di bibir atas Gamepad
         panelGroup.position.set(0, SURFACE_Y + 0.6, -7.8);
-        panelGroup.rotation.x = -Math.PI / 8; // Miring menghadap mata pemain
+        panelGroup.rotation.x = -Math.PI / 8; 
         deviceGroup.add(panelGroup);
 
         // Penyangga hitam agar Lightbar tidak terkesan melayang
@@ -633,7 +643,7 @@
             const ledGeo = new THREE.BoxGeometry(0.7, 0.9, 0.2); 
             const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
             const led = new THREE.Mesh(ledGeo, ledMat);
-            led.position.set(startX + (i * ledSpacing), 0, 0.3); // Menonjol sedikit
+            led.position.set(startX + (i * ledSpacing), 0, 0.3);
             
             let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
             led.userData = { defaultColor: 0x334155, activeColor: colorHex };
@@ -703,7 +713,6 @@
             updateMousePos(event);
             raycaster.setFromCamera(mouse, camera);
             
-            // Logika Analog Stick mengikuti Kursor
             if (activePad.userData.type === 'analog') {
                 const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -SURFACE_Y); 
                 let targetPoint = new THREE.Vector3();
@@ -763,9 +772,8 @@
             const delta = clock.getDelta();
             
             // --- UPDATE LAMPU RGB ---
-            // Lampu akan terus berganti warna setiap waktu berjalan
             const time = clock.getElapsedTime();
-            const rgbColor = new THREE.Color().setHSL((time * 0.3) % 1, 1, 0.5); // (Warna, Saturasi, Kecerahan)
+            const rgbColor = new THREE.Color().setHSL((time * 0.3) % 1, 1, 0.5); 
             rgbMaterials.forEach(mat => {
                 mat.emissive.copy(rgbColor);
             });
@@ -825,7 +833,7 @@
                 } else if (playerStamina < 50) {
                     staminaBar.style.background = '#f59e0b'; staminaLabel.style.color = '#f59e0b';
                 } else {
-                    staminaBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)'; staminaLabel.style.color = '#64748b';
+                    staminaBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)'; staminaLabel.style.color = '#cbd5e1';
                 }
 
                 let staminaPenalty = 0.2 + 0.8 * (playerStamina / 100); 
@@ -844,8 +852,8 @@
                     outputText.style.color = '#f59e0b'; 
                     pressureUI.style.borderColor = 'rgba(245, 158, 11, 0.8)';
                 } else {
-                    outputText.style.color = '#0056a0'; 
-                    pressureUI.style.borderColor = 'rgba(0, 86, 160, 0.4)';
+                    outputText.style.color = '#38bdf8'; 
+                    pressureUI.style.borderColor = 'rgba(56, 189, 248, 0.4)';
                 }
 
                 if (gameActive) {
@@ -894,7 +902,7 @@
                 }
             });
 
-            // ANIMASI ROTASI JOYSTICK FLEXIBLE SEPERTI ASLI
+            // ANIMASI ROTASI JOYSTICK FLEXIBLE 
             analogSticks.forEach(analog => {
                 if (activePad === analog && pointerIntersectPoint) {
                     const dx = pointerIntersectPoint.x - analog.userData.baseX;
