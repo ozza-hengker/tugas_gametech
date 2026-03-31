@@ -196,7 +196,7 @@
             <img src="logo filkom.png" alt="Logo FILKOM UB" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x60/0ea5e9/ffffff?text=FILKOM+UB';">
         </div>
         <h2>⚠️ FASE KALIBRASI</h2>
-        <p class="calib-instruction">Alat harus memetakan limit fisik Anda. <br><b>Tahan Klik (Hold) pada BANTALAN KINETIC DI GAGANG KIRI/KANAN</b> sekuat mungkin!</p>
+        <p class="calib-instruction">Alat harus memetakan limit fisik Anda. <br><b>Tahan Klik (Hold) pada TOMBOL EMAS DI GAGANG KIRI/KANAN</b> sekuat mungkin!</p>
         
         <div class="profile-panel">
             <p style="margin: 0 0 10px 0; font-size: 14px; color: #38bdf8; font-weight: 800; pointer-events: none;">Pilih Profil Fisik Anda:</p>
@@ -206,7 +206,7 @@
 
         <div id="progress-bg">
             <div id="progress-bar"></div>
-            <div id="progress-text">TAHAN PAD GAGANG: 0.0s / 3.0s</div>
+            <div id="progress-text">TAHAN PADDLE EMAS: 0.0s / 3.0s</div>
         </div>
         
         <div id="calib-status">MENUNGGU INPUT...</div>
@@ -236,7 +236,7 @@
 
         <div id="minigame-panel" class="glass-panel">
             <div class="mg-title">⚠️ PVE EVENT: ESCAPE!</div>
-            <p class="mg-desc">Gunakan Pad di gagang gamepad! Atur napas dan stamina ototmu untuk lari!</p>
+            <p class="mg-desc">Gunakan Pad Emas di gagang! Atur napas dan stamina ototmu untuk lari!</p>
             <div class="mg-bar-container">
                 <div id="mg-bar-fill"></div>
                 <div id="mg-status">JARAK AMAN: 30%</div>
@@ -330,7 +330,7 @@
             holdTimer = 0; pressureValue = 0; maxCalibrationForce = 1; gameActive = false;
             modalCalib.style.display = 'block';
             uiPlay.style.display = 'none'; minigamePanel.style.display = 'none';
-            progressBar.style.width = '0%'; progressText.innerText = `TAHAN PAD GAGANG: 0.0s / 3.0s`;
+            progressBar.style.width = '0%'; progressText.innerText = `TAHAN PADDLE EMAS: 0.0s / 3.0s`;
             calibStatus.innerText = 'MENUNGGU INPUT...'; calibStatus.style.color = '#ef4444';
         }
 
@@ -340,19 +340,21 @@
         }
 
         // ==========================================
-        // SETUP THREE.JS (TEMA DARK ELEGANT)
+        // SETUP THREE.JS (STUDIO LIGHTING E-SPORTS)
         // ==========================================
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050810);
-        scene.fog = new THREE.FogExp2(0x050810, 0.012);
+        scene.fog = new THREE.FogExp2(0x050810, 0.015);
 
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 38, 48); 
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 42, 45); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -361,28 +363,35 @@
         controls.minDistance = 20; controls.maxDistance = 100;
         controls.enablePan = false; 
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Cahaya Studio (Key, Fill Cyan, Fill Magenta)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        dirLight.position.set(10, 40, 20);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(10, 50, 20);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
         dirLight.shadow.bias = -0.001;
         scene.add(dirLight);
-        
-        const spotLight = new THREE.SpotLight(0x0ea5e9, 0.8);
-        spotLight.position.set(0, -10, 20); 
-        scene.add(spotLight);
+
+        // Pantulan Cahaya Biru dari kiri
+        const leftLight = new THREE.PointLight(0x0ea5e9, 1.5, 100);
+        leftLight.position.set(-30, 10, 10);
+        scene.add(leftLight);
+
+        // Pantulan Cahaya Pink/Ungu dari kanan
+        const rightLight = new THREE.PointLight(0xd946ef, 1.0, 100);
+        rightLight.position.set(30, 10, 10);
+        scene.add(rightLight);
 
         const floorGeo = new THREE.PlaneGeometry(300, 300);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x050810, roughness: 0.6, metalness: 0.8 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x050810, roughness: 0.3, metalness: 0.8 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2; floor.position.y = -8; floor.receiveShadow = true;
         scene.add(floor);
 
         const deviceGroup = new THREE.Group();
-        deviceGroup.position.y = 0; 
+        deviceGroup.position.y = 1.0; 
         scene.add(deviceGroup);
 
         const pads = [];
@@ -391,92 +400,159 @@
         const rgbMaterials = [];
 
         // ==========================================
-        // 1. MEMBANGUN BODI GAMEPAD
+        // 1. MEMBANGUN BODI GAMEPAD (HIGH POLY BEZIER)
         // ==========================================
-        const shapeWhite = new THREE.Shape();
-        shapeWhite.moveTo(-10, 7);
-        shapeWhite.lineTo(10, 7); 
-        shapeWhite.quadraticCurveTo(17, 7, 18, 1); 
-        shapeWhite.quadraticCurveTo(19, -10, 16, -16); 
-        shapeWhite.quadraticCurveTo(13, -22, 8, -12); 
-        shapeWhite.quadraticCurveTo(4, -8, 0, -8); 
-        shapeWhite.quadraticCurveTo(-4, -8, -8, -12); 
-        shapeWhite.quadraticCurveTo(-13, -22, -16, -16); 
-        shapeWhite.quadraticCurveTo(-19, -10, -18, 1); 
-        shapeWhite.quadraticCurveTo(-17, 7, -10, 7); 
+        const shape = new THREE.Shape();
+        // Menggunakan Bezier curve resolusi tinggi untuk lekukan super mulus
+        shape.moveTo(-6, 6);
+        shape.lineTo(6, 6); // Tepi Atas Tengah
+        shape.bezierCurveTo(14, 6, 17, 2, 18, -4); // Bahu Kanan
+        shape.bezierCurveTo(19, -12, 16, -18, 12, -18); // Gagang Kanan Bawah
+        shape.bezierCurveTo(8, -18, 5, -10, 4, -4); // Gagang Kanan Dalam
+        shape.bezierCurveTo(2, 0, -2, 0, -4, -4); // Lengkungan V Tengah
+        shape.bezierCurveTo(-5, -10, -8, -18, -12, -18); // Gagang Kiri Dalam
+        shape.bezierCurveTo(-16, -18, -19, -12, -18, -4); // Gagang Kiri Bawah
+        shape.bezierCurveTo(-17, 2, -14, 6, -6, 6); // Bahu Kiri
         
-        const extrudeWhite = { depth: 0.6, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.6, bevelThickness: 0.6 };
-        const bodyWhiteGeo = new THREE.ExtrudeGeometry(shapeWhite, extrudeWhite);
-        bodyWhiteGeo.translate(0, 0, -0.3); 
+        // Casing Putih Atas (Clearcoat Premium)
+        const extrudeWhite = { depth: 0.8, bevelEnabled: true, bevelSegments: 16, steps: 2, bevelSize: 0.6, bevelThickness: 0.6, curveSegments: 32 };
+        const bodyWhiteGeo = new THREE.ExtrudeGeometry(shape, extrudeWhite);
+        bodyWhiteGeo.translate(0, 0, -0.4); 
         
-        const matWhite = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.2, metalness: 0.1 });
+        const matWhite = new THREE.MeshPhysicalMaterial({ 
+            color: 0xfdfdfd, roughness: 0.2, metalness: 0.1, clearcoat: 1.0, clearcoatRoughness: 0.1
+        });
         const shellWhite = new THREE.Mesh(bodyWhiteGeo, matWhite);
         shellWhite.rotation.x = -Math.PI / 2;
-        shellWhite.position.y = 0.5; 
+        shellWhite.position.y = 0.8; 
         shellWhite.castShadow = true; shellWhite.receiveShadow = true;
         deviceGroup.add(shellWhite);
 
+        // Casing Hitam Bawah (Matte Finish)
         const shapeBlack = new THREE.Shape();
-        shapeBlack.moveTo(-16, 0);
-        shapeBlack.quadraticCurveTo(0, 4, 16, 0);
-        shapeBlack.quadraticCurveTo(18, -10, 16, -16); 
-        shapeBlack.quadraticCurveTo(13, -22, 8, -12); 
-        shapeBlack.quadraticCurveTo(4, -8, 0, -8); 
-        shapeBlack.quadraticCurveTo(-4, -8, -8, -12); 
-        shapeBlack.quadraticCurveTo(-13, -22, -16, -16); 
-        shapeBlack.lineTo(-16, 0); 
+        // Bentuk faceplate hitam di tengah bawah
+        shapeBlack.moveTo(-16, -4);
+        shapeBlack.bezierCurveTo(-10, 4, 10, 4, 16, -4); // Garis melengkung atas hitam
+        shapeBlack.bezierCurveTo(16, -12, 14, -18, 12, -18); 
+        shapeBlack.bezierCurveTo(8, -18, 5, -10, 4, -4); 
+        shapeBlack.bezierCurveTo(2, 0, -2, 0, -4, -4); 
+        shapeBlack.bezierCurveTo(-5, -10, -8, -18, -12, -18); 
+        shapeBlack.bezierCurveTo(-14, -18, -16, -12, -16, -4); 
 
-        const extrudeBlack = { depth: 1.0, bevelEnabled: true, bevelSegments: 8, steps: 1, bevelSize: 0.4, bevelThickness: 0.4 };
+        const extrudeBlack = { depth: 1.2, bevelEnabled: true, bevelSegments: 12, steps: 1, bevelSize: 0.4, bevelThickness: 0.4, curveSegments: 32 };
         const bodyBlackGeo = new THREE.ExtrudeGeometry(shapeBlack, extrudeBlack);
-        bodyBlackGeo.translate(0, 0, -0.5);
+        bodyBlackGeo.translate(0, 0, -0.6);
         
-        const matBlack = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.1 });
+        const matBlack = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8, metalness: 0.2 });
         const shellBlack = new THREE.Mesh(bodyBlackGeo, matBlack);
         shellBlack.rotation.x = -Math.PI / 2;
-        shellBlack.position.y = 0.55; 
+        shellBlack.position.y = 0.85; 
         shellBlack.scale.set(0.99, 0.99, 1);
         shellBlack.castShadow = true; shellBlack.receiveShadow = true;
         deviceGroup.add(shellBlack);
 
+        // Garis Biru Neon Pembatas
         const ledLineShape = new THREE.Shape();
-        ledLineShape.moveTo(-16.2, -0.15);
-        ledLineShape.quadraticCurveTo(0, 3.85, 16.2, -0.15);
-        ledLineShape.lineTo(16.2, 0.15);
-        ledLineShape.quadraticCurveTo(0, 4.15, -16.2, 0.15);
-        ledLineShape.lineTo(-16.2, -0.15);
+        ledLineShape.moveTo(-16.2, -4);
+        ledLineShape.bezierCurveTo(-10, 4.2, 10, 4.2, 16.2, -4);
+        ledLineShape.lineTo(16.2, -3.7);
+        ledLineShape.bezierCurveTo(10, 4.5, -10, 4.5, -16.2, -3.7);
+        ledLineShape.lineTo(-16.2, -4);
 
-        const ledLineGeo = new THREE.ExtrudeGeometry(ledLineShape, { depth: 0.1, bevelEnabled: false });
+        const ledLineGeo = new THREE.ExtrudeGeometry(ledLineShape, { depth: 0.1, bevelEnabled: false, curveSegments: 32 });
         const ledLineMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 2.0 });
         const ledLine = new THREE.Mesh(ledLineGeo, ledLineMat);
         ledLine.rotation.x = -Math.PI / 2;
-        ledLine.position.y = 1.1; 
+        ledLine.position.y = 1.45; 
         deviceGroup.add(ledLine);
 
-        const SURFACE_Y = 1.1; 
+        const SURFACE_Y = 1.4; 
 
         // ==========================================
-        // 3. TOUCHPAD PUTIH & TOMBOL TENGAH (Home/Options)
+        // 2. KINETIC PADDLES EMAS (DI GAGANG KIRI KANAN)
+        // ==========================================
+        // Material Logam Emas
+        const padMaterial = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.2, metalness: 0.9 });
+        // Bentuk dasar memanjang (oval/kapsul)
+        const cylinderGeo = new THREE.CylinderGeometry(2.0, 2.2, 1.2, 32); 
+
+        function createKineticPaddle(xPosition, zPosition, rotY, rotZ) {
+            const padContainer = new THREE.Group();
+            
+            padContainer.position.set(xPosition, SURFACE_Y - 0.2, zPosition); 
+            // Miringkan agar pas dengan lekuk gagang
+            padContainer.rotation.set(0.2, rotY, rotZ);
+
+            const btnMeshGroup = new THREE.Group();
+            
+            const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
+            cylinder.position.y = 0.6; 
+            cylinder.castShadow = true; cylinder.receiveShadow = true;
+            
+            // Atap paddle
+            const domeGeo = new THREE.SphereGeometry(2.0, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
+            const dome = new THREE.Mesh(domeGeo, padMaterial);
+            dome.position.y = 1.2; dome.scale.y = 0.15; dome.castShadow = true;
+            
+            btnMeshGroup.add(cylinder); btnMeshGroup.add(dome);
+            
+            // Peregangan agar menjadi bentuk Oval memanjang seperti Elite Paddle
+            btnMeshGroup.scale.set(1.6, 1, 1); 
+
+            // Cincin RGB mengelilingi paddle
+            const ringGeo = new THREE.TorusGeometry(2.3, 0.1, 32, 32);
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x00ffff, emissiveIntensity: 1.5 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.y = 0.2; ring.rotation.x = Math.PI/2;
+            ring.scale.set(1.6, 1, 1); 
+            rgbMaterials.push(ringMat);
+
+            padContainer.add(btnMeshGroup); padContainer.add(ring);
+            
+            padContainer.userData = { 
+                isPad: true, type: 'main', 
+                btnMesh: btnMeshGroup, ring: ring, 
+                defaultY: 0 
+            };
+            deviceGroup.add(padContainer); 
+            
+            const hitboxGeo = new THREE.CylinderGeometry(3, 3, 3, 16);
+            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+            const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+            hitbox.position.y = 1.0;
+            hitbox.scale.set(1.6, 1, 1);
+            padContainer.add(hitbox);
+
+            pads.push(hitbox);
+            mainPads.push(padContainer);
+        }
+
+        // Penempatan presisi di genggaman kiri dan kanan
+        createKineticPaddle(-13.5, 4, 0.4, 0.2); 
+        createKineticPaddle(13.5, 4, -0.4, -0.2);  
+
+        // ==========================================
+        // 3. TOUCHPAD PUTIH & TOMBOL DASHBOARD (Tengah)
         // ==========================================
         const tpShape = new THREE.Shape();
-        tpShape.moveTo(-5, 6.5);
-        tpShape.lineTo(5, 6.5);
-        tpShape.quadraticCurveTo(5.5, 6.5, 5.5, 6);
-        tpShape.lineTo(5, 2.5);
-        tpShape.quadraticCurveTo(4.5, 1.5, 0, 1.5);
-        tpShape.quadraticCurveTo(-4.5, 1.5, -5, 2.5);
-        tpShape.lineTo(-5.5, 6);
-        tpShape.quadraticCurveTo(-5.5, 6.5, -5, 6.5);
+        tpShape.moveTo(-5, 6);
+        tpShape.lineTo(5, 6);
+        tpShape.quadraticCurveTo(5.5, 6, 5.5, 5.5);
+        tpShape.lineTo(4.5, 1.5);
+        tpShape.quadraticCurveTo(4.0, 0.5, 0, 0.5);
+        tpShape.quadraticCurveTo(-4.0, 0.5, -4.5, 1.5);
+        tpShape.lineTo(-5.5, 5.5);
+        tpShape.quadraticCurveTo(-5.5, 6, -5, 6);
 
-        const tpGeo = new THREE.ExtrudeGeometry(tpShape, { depth: 0.15, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.1 });
+        const tpGeo = new THREE.ExtrudeGeometry(tpShape, { depth: 0.15, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.1, curveSegments: 32 });
         tpGeo.translate(0, 0, -0.075);
-        const tpMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-        const touchpad = new THREE.Mesh(tpGeo, tpMat);
+        const touchpad = new THREE.Mesh(tpGeo, matWhite); // Pakai bahan glossy sama
         touchpad.rotation.x = -Math.PI / 2;
         touchpad.position.y = SURFACE_Y + 0.1;
         touchpad.castShadow = true;
         deviceGroup.add(touchpad);
 
-        // LED Indikator Effort
+        // LED Dashboard tersembunyi di bingkai atas Touchpad
         const leds = [];
         const totalLeds = 14; const ledSpacing = 0.65;
         const startX = -((totalLeds * ledSpacing) / 2) + (ledSpacing / 2);
@@ -484,30 +560,30 @@
             const ledGeo = new THREE.BoxGeometry(0.5, 0.1, 0.2); 
             const ledMat = new THREE.MeshBasicMaterial({ color: 0x334155 });
             const led = new THREE.Mesh(ledGeo, ledMat);
-            led.position.set(startX + (i * ledSpacing), SURFACE_Y + 0.2, -6.4); 
+            led.position.set(startX + (i * ledSpacing), SURFACE_Y + 0.2, -6.1); 
             let colorHex = (i < totalLeds * 0.5) ? 0x10b981 : (i < totalLeds * 0.8) ? 0xf59e0b : 0xef4444;
             led.userData = { defaultColor: 0x334155, activeColor: colorHex };
             deviceGroup.add(led); leds.push(led);
         }
 
-        // Tiga Tombol Ekstra (Home, Share, Options) untuk mengisi bagian tengah
+        // Tombol PS/Home & Options
         function createDecoButton(x, z, rotY, isRound) {
             const btnGroup = new THREE.Group();
             let btnGeo;
             if (isRound) {
-                btnGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.3, 32);
+                btnGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.4, 32);
             } else {
-                btnGeo = new THREE.BoxGeometry(0.5, 0.3, 1.2);
+                btnGeo = new THREE.BoxGeometry(0.6, 0.4, 1.5);
             }
             const btn = new THREE.Mesh(btnGeo, matBlack);
-            btn.position.y = 0.15;
+            btn.position.y = 0.2;
             btnGroup.add(btn);
 
             if (isRound) {
                 const ringGeo = new THREE.TorusGeometry(0.9, 0.05, 16, 32);
                 const ringMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x38bdf8, emissiveIntensity: 1.5 });
                 const ring = new THREE.Mesh(ringGeo, ringMat);
-                ring.position.y = 0.05; ring.rotation.x = Math.PI/2;
+                ring.position.y = 0.1; ring.rotation.x = Math.PI/2;
                 btnGroup.add(ring);
                 rgbMaterials.push(ringMat);
             }
@@ -516,80 +592,18 @@
             btnGroup.rotation.y = rotY;
             deviceGroup.add(btnGroup);
         }
-        createDecoButton(0, -0.5, 0, true); // Home Button
-        createDecoButton(-4.5, -3.5, -0.3, false); // Share Button
-        createDecoButton(4.5, -3.5, 0.3, false); // Options Button
-
-
-        // ==========================================
-        // 4. KINETIC FORCE PADDLES (DIPINDAH KE GAGANG)
-        // ==========================================
-        // Dibuat lebih lebar/oval agar pas sebagai "paddle" telapak tangan
-        const padMaterial = new THREE.MeshStandardMaterial({ color: 0x0a0f1a, roughness: 0.9, metalness: 0.2 });
-        const cylinderGeo = new THREE.CylinderGeometry(2.6, 2.8, 0.8, 32); 
-        const domeGeo = new THREE.SphereGeometry(2.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 4);
-
-        function createKineticPaddle(xPosition, zPosition, rotX, rotZ) {
-            const padContainer = new THREE.Group();
-            
-            // Posisikan dan miringkan grup keseluruhan mengikuti gagang
-            padContainer.position.set(xPosition, SURFACE_Y - 0.2, zPosition); 
-            padContainer.rotation.set(rotX, 0, rotZ);
-
-            // Buat grup Mesh tersendiri untuk di-animasikan naik turunnya (Local Y)
-            const btnMeshGroup = new THREE.Group();
-            
-            const cylinder = new THREE.Mesh(cylinderGeo, padMaterial);
-            cylinder.position.y = 0.4; 
-            cylinder.castShadow = true; cylinder.receiveShadow = true;
-            
-            const dome = new THREE.Mesh(domeGeo, padMaterial);
-            dome.position.y = 0.8; dome.scale.y = 0.2; dome.castShadow = true;
-            
-            btnMeshGroup.add(cylinder); btnMeshGroup.add(dome);
-            // Melar-kan geometri agar bentuknya oval seperti paddle (Bentuk Ajazz)
-            btnMeshGroup.scale.set(1, 1, 1.2);
-
-            const ringGeo = new THREE.TorusGeometry(3.0, 0.15, 32, 32);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.0 });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = 0.1; ring.rotation.x = Math.PI/2;
-            ring.scale.set(1, 1, 1.2); // Ikut oval
-
-            padContainer.add(btnMeshGroup); padContainer.add(ring);
-            
-            padContainer.userData = { 
-                isPad: true, type: 'main', 
-                btnMesh: btnMeshGroup, ring: ring, 
-                defaultY: 0 // Posisi netral local Y
-            };
-            deviceGroup.add(padContainer); 
-            
-            // Hitbox diletakkan di dalam container agar ikut rotasi dan posisi
-            const hitboxGeo = new THREE.CylinderGeometry(3.5, 3.5, 3, 16);
-            const hitboxMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
-            const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
-            hitbox.position.y = 1.0;
-            hitbox.scale.set(1, 1, 1.2);
-            padContainer.add(hitbox);
-
-            pads.push(hitbox);
-            mainPads.push(padContainer);
-        }
-
-        // Posisi di gagang bawah/samping
-        createKineticPaddle(-12.5, 4, 0.15, 0.25); 
-        createKineticPaddle(12.5, 4, 0.15, -0.25);  
+        createDecoButton(0, -2.5, 0, true); // Home Button bulat
+        createDecoButton(-6, -5.0, -0.4, false); // Share (Kapsul)
+        createDecoButton(6, -5.0, 0.4, false); // Options (Kapsul)
 
         // ==========================================
-        // 5. ANALOG JOYSTICK FLEXIBLE 
+        // 4. ANALOG JOYSTICK FLEXIBLE (Di Bawah Hitam)
         // ==========================================
         function createAnalogStick(x, z) {
             const analogGroup = new THREE.Group();
             
             const socketGeo = new THREE.SphereGeometry(2.6, 32, 16, 0, Math.PI*2, 0, Math.PI/2.2);
-            const socketMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
-            const socket = new THREE.Mesh(socketGeo, socketMat);
+            const socket = new THREE.Mesh(socketGeo, matBlack);
             socket.position.y = -0.2; 
             
             const rgbRingGeo = new THREE.TorusGeometry(2.9, 0.1, 16, 32);
@@ -634,12 +648,12 @@
             analogSticks.push(analogGroup);
         }
         
-        // Pindah sedikit lebih ke tengah karena ada paddle di luar
-        createAnalogStick(-6.5, 5.5);
-        createAnalogStick(6.5, 5.5);
+        // Pindah lebih presisi ke tengah karena paddle di sisi luar
+        createAnalogStick(-5.5, 3.5);
+        createAnalogStick(5.5, 3.5);
 
         // ==========================================
-        // 6. D-PAD HITAM 
+        // 5. D-PAD HITAM PRESISI
         // ==========================================
         const dpadGroup = new THREE.Group();
         const dpadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
@@ -656,7 +670,7 @@
         dpadGroup.add(dpadRgb);
         rgbMaterials.push(dpadRgbMat);
 
-        dpadGroup.position.set(-12, SURFACE_Y, -2);
+        dpadGroup.position.set(-10, SURFACE_Y, -2.5);
         dpadGroup.rotation.x = -0.05;
         dpadGroup.rotation.z = 0.05;
 
@@ -669,7 +683,7 @@
         pads.push(dpadHitbox);
 
         // ==========================================
-        // 7. CRYSTAL ACTION BUTTONS 
+        // 6. CRYSTAL ACTION BUTTONS (Transparan + Warna Dalam)
         // ==========================================
         function createActionButton(x, z, colorHex) {
             const btnGroup = new THREE.Group();
@@ -685,14 +699,15 @@
             btnGroup.add(btnRgb);
             rgbMaterials.push(btnRgbMat);
             
-            const coreGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.6, 32);
-            const coreMat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 1.0 });
+            const coreGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.6, 32);
+            const coreMat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 1.5 });
             const core = new THREE.Mesh(coreGeo, coreMat);
             core.position.y = 0.4;
             
+            // Cangkang kaca bening
             const btnGeo = new THREE.CylinderGeometry(1.15, 1.15, 0.6, 32);
             const btnMat = new THREE.MeshPhysicalMaterial({ 
-                color: 0xffffff, roughness: 0.1, transmission: 0.9, thickness: 0.5, transparent: true, opacity: 0.6
+                color: 0xffffff, roughness: 0.0, transmission: 1.0, thickness: 0.5, transparent: true, opacity: 0.4
             });
             const btn = new THREE.Mesh(btnGeo, btnMat);
             btn.position.y = 0.4; btn.castShadow = true;
@@ -707,10 +722,11 @@
             deviceGroup.add(btnGroup); pads.push(btn);
         }
         
-        createActionButton(12, -4.5, 0xf97316);   // Atas 
-        createActionButton(14.5, -2.0, 0xef4444); // Kanan 
-        createActionButton(12, 0.5, 0x10b981);    // Bawah 
-        createActionButton(9.5, -2.0, 0x38bdf8);  // Kiri 
+        // Layout PlayStation presisi
+        createActionButton(10, -5.0, 0xf97316);   // Atas (Orange)
+        createActionButton(12.5, -2.5, 0xef4444); // Kanan (Merah)
+        createActionButton(10, 0.0, 0x10b981);    // Bawah (Hijau)
+        createActionButton(7.5, -2.5, 0x38bdf8);  // Kiri (Biru)
 
         // ==========================================
         // LOGIKA INTERAKSI FLEXIBLE & RAYCASTER
@@ -786,7 +802,6 @@
                     isPressing = false;
                     activePad.userData.ring.material.color.setHex(0x38bdf8); 
                     activePad.userData.ring.material.emissive.setHex(0x0284c7); 
-                    activePad.userData.ring.scale.set(1, 1, 1.2); // Kembali oval
                 } else if (activePad.userData.type === 'action') {
                     activePad.userData.mesh.position.y = activePad.userData.originalY;
                     activePad.userData.core.position.y = activePad.userData.originalY;
@@ -858,13 +873,13 @@
                     let progressPct = (holdTimer / REQUIRED_HOLD_TIME) * 100;
                     if(progressPct > 100) progressPct = 100;
                     progressBar.style.width = progressPct + '%';
-                    progressText.innerText = `TAHAN PAD GAGANG: ${holdTimer.toFixed(1)}s / 3.0s`;
+                    progressText.innerText = `TAHAN PADDLE EMAS: ${holdTimer.toFixed(1)}s / 3.0s`;
 
                     if (holdTimer >= REQUIRED_HOLD_TIME) finishCalibration();
                 } else {
                     if (holdTimer > 0 && holdTimer < REQUIRED_HOLD_TIME) {
                         holdTimer = 0; progressBar.style.width = '0%';
-                        progressText.innerText = `TAHAN PAD GAGANG: 0.0s / 3.0s`;
+                        progressText.innerText = `TAHAN PADDLE EMAS: 0.0s / 3.0s`;
                         calibStatus.innerText = 'GAGAL! TAHAN TERUS!'; calibStatus.style.color = '#ef4444';
                     }
                 }
@@ -944,16 +959,14 @@
                 deviceGroup.position.z = baseOriginalPos.z;
             }
 
-            // Animasi Amblas Kinetic Pads (Paddle Grip)
+            // Animasi Amblas Kinetic Pads Emas (Paddle Grip)
             mainPads.forEach(pad => {
                 const btnMesh = pad.userData.btnMesh;
                 if (activePad === pad) {
-                    // Animasi amblas masuk ke dalam bodi secara miring (menggunakan local Y pada btnMeshGroup)
                     btnMesh.position.y = pad.userData.defaultY - (effortPercentage / 100) * 0.5;
                     const scaleAura = 1 + (effortPercentage / 100) * 0.25; 
-                    pad.userData.ring.scale.set(scaleAura, scaleAura, scaleAura * 1.2); // Tetap Oval
+                    pad.userData.ring.scale.set(scaleAura * 1.6, scaleAura, scaleAura); 
                 } else {
-                    // Kembali ke atas
                     btnMesh.position.y += (pad.userData.defaultY - btnMesh.position.y) * 0.3;
                 }
             });
